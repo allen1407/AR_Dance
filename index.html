@@ -26,37 +26,28 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
+      width: 100%; height: 100%; overflow: hidden;
       font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--bg); color: var(--text);
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
     }
 
-    /* ─── SPLASH ─────────────────────────────────────────── */
+    /* ═══ SPLASH ══════════════════════════════════════════ */
     #splash {
       position: fixed; inset: 0; z-index: 2000;
       display: flex; align-items: center; justify-content: center;
       background: var(--bg);
     }
-
     #splash::before {
-      content: '';
-      position: absolute; inset: 0;
+      content: ''; position: absolute; inset: 0;
       background-image:
         linear-gradient(rgba(184,255,87,0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(184,255,87,0.03) 1px, transparent 1px);
       background-size: 60px 60px;
-      animation: gridDrift 20s linear infinite;
-      pointer-events: none;
+      animation: gridDrift 20s linear infinite; pointer-events: none;
     }
-
-    @keyframes gridDrift {
-      0%   { transform: translateY(0); }
-      100% { transform: translateY(60px); }
-    }
+    @keyframes gridDrift { 0%{transform:translateY(0)} 100%{transform:translateY(60px)} }
 
     .orb {
       position: absolute; border-radius: 50%;
@@ -64,92 +55,67 @@
     }
     .orb-1 { width:500px;height:500px;background:var(--accent);top:-200px;left:-150px;animation:orbFloat 8s ease-in-out infinite; }
     .orb-2 { width:400px;height:400px;background:var(--accent2);bottom:-150px;right:-100px;animation:orbFloat 10s ease-in-out infinite reverse; }
-
-    @keyframes orbFloat {
-      0%,100% { transform: translate(0,0); }
-      50%     { transform: translate(30px,-30px); }
-    }
+    @keyframes orbFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-30px)} }
 
     #splash-card {
       position: relative; z-index: 1;
-      background: var(--glass);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 52px 44px 44px;
-      text-align: center;
-      max-width: 400px; width: 90%;
+      background: var(--glass); border: 1px solid var(--border);
+      border-radius: 28px; padding: 52px 44px 44px;
+      text-align: center; max-width: 400px; width: 90%;
       backdrop-filter: blur(24px);
       box-shadow: 0 0 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
       animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
     }
-
     @keyframes cardIn {
-      from { opacity:0; transform: translateY(28px) scale(0.97); }
-      to   { opacity:1; transform: translateY(0)    scale(1); }
+      from { opacity:0; transform:translateY(28px) scale(0.97); }
+      to   { opacity:1; transform:translateY(0)    scale(1); }
     }
 
     .badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(184,255,87,0.1);
-      border: 1px solid rgba(184,255,87,0.25);
-      color: var(--accent);
-      font-size: 11px; font-weight: 600;
+      background: rgba(184,255,87,0.1); border: 1px solid rgba(184,255,87,0.25);
+      color: var(--accent); font-size: 11px; font-weight: 600;
       letter-spacing: 0.12em; text-transform: uppercase;
-      padding: 5px 14px; border-radius: 100px;
-      margin-bottom: 26px;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 26px;
     }
     .badge::before {
-      content: '';
-      width: 6px; height: 6px; background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
+      content: ''; width: 6px; height: 6px;
+      background: var(--accent); border-radius: 50%;
+      animation: dotPulse 2s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0%,100% { opacity:1; transform:scale(1); }
-      50%     { opacity:0.4; transform:scale(0.7); }
-    }
+    @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
     .splash-title {
       font-family: 'Syne', sans-serif;
-      font-size: clamp(2rem,8vw,2.8rem);
-      font-weight: 800; line-height: 1.05;
-      letter-spacing: -0.03em; margin-bottom: 12px;
+      font-size: clamp(2rem,8vw,2.8rem); font-weight: 800;
+      line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 12px;
     }
     .splash-title span {
       background: linear-gradient(135deg, var(--accent), #57ffdc);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-
     .splash-sub {
       font-size: 13px; line-height: 1.65;
-      color: rgba(240,240,240,0.42);
-      font-weight: 300; margin-bottom: 36px;
+      color: rgba(240,240,240,0.42); font-weight: 300; margin-bottom: 36px;
     }
 
-    /* Steps */
     .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; text-align: left; }
     .step {
-      display: flex; align-items: flex-start; gap: 12px;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
       border-radius: 12px;
     }
     .step-num {
-      min-width: 22px; height: 22px; border-radius: 50%;
+      min-width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: 800;
-      font-family: 'Syne', sans-serif; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--accent), #57ffdc);
-      color: #0a0a0f;
+      font-size: 10px; font-weight: 800; font-family: 'Syne', sans-serif;
+      background: linear-gradient(135deg, var(--accent), #57ffdc); color: #0a0a0f;
     }
     .step p { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; }
 
     #launch-btn {
-      width: 100%; padding: 17px 20px;
-      border: none; outline: none; border-radius: 100px;
-      font-family: 'Syne', sans-serif;
+      width: 100%; padding: 17px 20px; border: none; outline: none;
+      border-radius: 100px; font-family: 'Syne', sans-serif;
       font-size: 15px; font-weight: 700; letter-spacing: 0.04em;
       cursor: pointer; position: relative; overflow: hidden;
       background: var(--accent); color: #0a0a0f;
@@ -161,88 +127,74 @@
       background: linear-gradient(135deg,rgba(255,255,255,0.18),transparent);
     }
     #launch-btn:active { transform: scale(0.97); }
+    .launch-hint { margin-top: 20px; font-size: 11px; color: rgba(240,240,240,0.18); letter-spacing: 0.05em; }
 
-    .launch-hint {
-      margin-top: 20px; font-size: 11px;
-      color: rgba(240,240,240,0.18); letter-spacing: 0.05em;
-    }
-
-    /* ─── LOADING OVERLAY ────────────────────────────────── */
+    /* ═══ LOADING ══════════════════════════════════════════ */
     #loading-overlay {
       display: none; position: fixed; inset: 0; z-index: 1500;
-      background: var(--bg);
-      align-items: center; justify-content: center;
-      flex-direction: column; gap: 24px;
+      background: var(--bg); flex-direction: column;
+      align-items: center; justify-content: center; gap: 24px;
     }
     #loading-overlay.active { display: flex; }
 
     .loading-avatar { font-size: 52px; animation: avatarBob 1s ease-in-out infinite alternate; }
     @keyframes avatarBob {
-      from { transform: translateY(0) rotate(-5deg); }
-      to   { transform: translateY(-12px) rotate(5deg); }
+      from { transform:translateY(0) rotate(-5deg); }
+      to   { transform:translateY(-12px) rotate(5deg); }
     }
-
     .loading-percent {
       font-family: 'Syne', sans-serif; font-size: 2.4rem;
       font-weight: 800; letter-spacing: -0.04em;
       background: linear-gradient(135deg, var(--accent), #57ffdc);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
-
     .loading-bar-wrap {
       width: 200px; height: 5px; border-radius: 100px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
     }
     .loading-bar-fill {
       height: 100%; width: 0%; border-radius: 100px;
-      background: linear-gradient(90deg, var(--accent), #57ffdc);
-      transition: width 0.25s ease;
+      background: linear-gradient(90deg, var(--accent), #57ffdc); transition: width 0.25s ease;
     }
-
     .loading-label {
       font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
-      letter-spacing: 0.15em; text-transform: uppercase;
-      color: rgba(240,240,240,0.38);
+      letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,240,240,0.38);
     }
-    .loading-hint { font-size: 12px; color: rgba(240,240,240,0.18); }
+    .loading-hint { font-size: 12px; color: rgba(240,240,240,0.18); text-align: center; padding: 0 20px; }
 
-    /* ─── AR SCREEN ──────────────────────────────────────── */
-    /*
-      model-viewer MUST fill its parent with no siblings that
-      could accidentally steal touch events or shift layout.
-      All floating UI (topbar, controls, AR button) uses
-      position:fixed so they never affect model-viewer's box.
-    */
+    /* ═══ AR SCREEN ════════════════════════════════════════
+       model-viewer is the ONLY child here.
+       It fills the entire screen. Nothing else is inside.
+       All overlay UI (topbar, anim buttons, AR button)
+       uses position:fixed so it never disrupts model-viewer.
+    ═══════════════════════════════════════════════════════ */
     #ar-screen {
       display: none; position: fixed; inset: 0; z-index: 100;
-      background: #000;
     }
     #ar-screen.active { display: block; }
 
-    #model-viewer {
-      display: block;
-      width: 100%; height: 100%;
-      background-color: #111118;
+    model-viewer {
+      display: block; width: 100%; height: 100%;
       --poster-color: #0a0a0f;
       --progress-bar-color: transparent;
+      background-color: #111118;
     }
 
-    /* Kill every built-in model-viewer button via ::part */
-    #model-viewer::part(default-ar-button)     { display: none !important; }
-    #model-viewer::part(default-progress-bar)  { display: none !important; }
+    /* Kill every built-in model-viewer UI chrome */
+    model-viewer::part(default-ar-button)    { display: none !important; }
+    model-viewer::part(default-progress-bar) { display: none !important; }
 
-    /* ─── FIXED TOPBAR (floats over AR screen) ───────────── */
+    /* ═══ FIXED TOPBAR ═════════════════════════════════════
+       position:fixed — floats above model-viewer, never
+       affects its layout. pointer-events:none lets touches
+       pass through to model-viewer except on child buttons.
+    ═══════════════════════════════════════════════════════ */
     #ar-topbar {
-      display: none;
-      position: fixed;
+      display: none; position: fixed;
       top: 0; left: 0; right: 0;
       padding: calc(var(--safe-top) + 14px) 20px 16px;
       z-index: 200;
-      background: linear-gradient(to bottom, rgba(10,10,15,0.85) 60%, transparent);
-      /* pointer-events:none lets touches pass through to model-viewer
-         except on the actual child buttons */
+      background: linear-gradient(to bottom, rgba(10,10,15,0.85) 55%, transparent);
       pointer-events: none;
       align-items: center; justify-content: space-between;
     }
@@ -250,135 +202,118 @@
     #ar-topbar > * { pointer-events: auto; }
 
     .ar-title {
-      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px;
-      color: var(--accent); letter-spacing: 0.06em;
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: 15px; color: var(--accent); letter-spacing: 0.06em;
     }
-
     #close-btn {
       width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: #fff; font-size: 18px;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; font-size: 18px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; backdrop-filter: blur(10px);
-      transition: background 0.2s;
+      backdrop-filter: blur(10px); transition: background 0.2s;
     }
     #close-btn:hover { background: rgba(255,255,255,0.15); }
 
-    /* ─── FIXED ANIM CONTROLS ────────────────────────────── */
+    /* ═══ FIXED ANIM CONTROLS ══════════════════════════════
+       Sits above the AR button row. Also position:fixed.
+    ═══════════════════════════════════════════════════════ */
     #ar-controls {
-      display: none;
-      position: fixed;
-      bottom: calc(var(--safe-bottom) + 110px);
+      display: none; position: fixed;
+      /* sits above the slot-ar-btn which is ~80px from bottom */
+      bottom: calc(var(--safe-bottom) + 120px);
       left: 0; right: 0;
       justify-content: center; gap: 12px;
-      z-index: 200;
-      pointer-events: none;
+      z-index: 200; pointer-events: none;
     }
     #ar-controls.active { display: flex; }
     #ar-controls > * { pointer-events: auto; }
 
     .anim-btn {
-      background: rgba(10,10,15,0.80);
-      border: 1px solid var(--border); color: #fff;
-      font-family: 'Syne', sans-serif; font-size: 12px;
-      font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      padding: 12px 22px; border-radius: 100px; cursor: pointer;
-      backdrop-filter: blur(16px);
+      background: rgba(10,10,15,0.82); border: 1px solid var(--border);
+      color: #fff; font-family: 'Syne', sans-serif;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; padding: 12px 22px; border-radius: 100px;
+      cursor: pointer; backdrop-filter: blur(16px);
       display: flex; align-items: center; gap: 8px;
       transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
-    .anim-btn:hover {
-      background: rgba(184,255,87,0.15);
-      border-color: var(--accent); color: var(--accent);
-    }
+    .anim-btn:hover { background:rgba(184,255,87,0.15); border-color:var(--accent); color:var(--accent); }
+    .anim-btn:active { transform: scale(0.96); }
 
-    /* ─── FIXED "VIEW IN AR" BUTTON ──────────────────────── */
-    /*
-      This button lives INSIDE model-viewer via slot="ar-button".
-      model-viewer positions it automatically — we DON'T touch its
-      layout from outside. We use position:fixed to pin our
-      custom slot button at the bottom center.
+    /* ═══ AR LAUNCH BUTTON (slot="ar-button") ══════════════
+       Lives INSIDE <model-viewer> as slot="ar-button".
 
-      CRITICAL: The slot="ar-button" element must be a DIRECT child
-      of <model-viewer>. The browser's gesture-trust chain requires
-      the tap to originate on the model-viewer element itself.
-      Any wrapper div outside model-viewer calling activateAR()
-      programmatically is blocked by Chrome/Safari security policies.
-    */
+       WHY: Browsers (Chrome Android, Safari iOS) only grant
+       WebXR / camera permission when the tap originates on
+       the <model-viewer> element itself via a slotted button.
+       Calling .activateAR() from outside is security-blocked.
+
+       model-viewer positions slotted ar-button content at
+       the bottom-center of its own bounding box automatically.
+       We do NOT use position:fixed or position:absolute here —
+       model-viewer's shadow DOM handles placement.
+       We just style the button itself.
+    ═══════════════════════════════════════════════════════ */
     .slot-ar-btn {
       background: var(--accent); color: #0a0a0f;
-      font-family: 'Syne', sans-serif; font-size: 14px;
-      font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-      padding: 16px 36px; border-radius: 100px; border: none;
+      font-family: 'Syne', sans-serif; font-size: 15px;
+      font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 18px 40px; border-radius: 100px; border: none;
       cursor: pointer; white-space: nowrap;
-      display: flex; align-items: center; gap: 10px;
-      box-shadow: 0 4px 30px rgba(184,255,87,0.5);
-      transition: background 0.2s, transform 0.15s;
-      /* Position inside model-viewer's coordinate space.
-         model-viewer renders slot="ar-button" into its own shadow DOM
-         at the bottom-center — this absolute positioning is relative
-         to the model-viewer element, NOT the viewport. */
-      position: absolute;
-      bottom: calc(var(--safe-bottom) + 32px);
-      left: 50%; transform: translateX(-50%);
+      display: inline-flex; align-items: center; gap: 10px;
+      box-shadow: 0 4px 30px rgba(184,255,87,0.55);
+      transition: transform 0.15s, box-shadow 0.15s;
+      /* Let model-viewer's shadow DOM center this.
+         Margin-bottom pushes it up from the very bottom edge. */
+      margin-bottom: calc(var(--safe-bottom) + 40px);
     }
-    .slot-ar-btn:active { transform: translateX(-50%) scale(0.96); }
+    .slot-ar-btn:hover  { box-shadow: 0 6px 40px rgba(184,255,87,0.7); }
+    .slot-ar-btn:active { transform: scale(0.96); }
 
-    /* ─── NO-AR NOTICE ───────────────────────────────────── */
+    /* ═══ NO-AR NOTICE ═════════════════════════════════════ */
     #no-ar-notice {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.88); z-index: 300;
       align-items: center; justify-content: center;
     }
     #no-ar-notice.show { display: flex; }
-
     .notice-box {
-      background: #1a1a24;
-      border: 1px solid var(--border); border-radius: 20px;
-      padding: 40px 32px; max-width: 320px; width: 88%;
-      text-align: center;
+      background: #1a1a24; border: 1px solid var(--border);
+      border-radius: 20px; padding: 40px 32px;
+      max-width: 320px; width: 88%; text-align: center;
     }
     .notice-box h2 { font-family:'Syne',sans-serif; font-size:1.3rem; margin-bottom:10px; }
     .notice-box p  { font-size:13px; line-height:1.6; margin-bottom:24px; color:rgba(240,240,240,0.45); }
-    .notice-close  {
-      background: var(--accent); color: #0a0a0f;
-      border: none; font-family: 'Syne', sans-serif;
-      font-weight: 700; font-size: 13px;
+    .notice-close {
+      background: var(--accent); color: #0a0a0f; border: none;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
       padding: 12px 28px; border-radius: 100px; cursor: pointer;
     }
 
-    @media (max-height: 680px) {
-      #splash-card { padding: 32px 24px; }
-      .steps { margin-bottom: 20px; }
-    }
+    @media (max-height: 680px) { #splash-card { padding: 32px 24px; } .steps { margin-bottom: 20px; } }
   </style>
 </head>
 <body>
 
-<!-- ═══════════════ SPLASH ═══════════════════════════════ -->
+<!-- ═══════════════════ SPLASH ══════════════════════════ -->
 <div id="splash">
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
-
   <div id="splash-card">
     <div class="badge">WebAR Experience</div>
-
     <div class="splash-title">Make it<br><span>Dance. 💃</span></div>
-    <p class="splash-sub">Place a dancing avatar in your real world.<br>No app needed — pure browser AR.</p>
-
+    <p class="splash-sub">Drop a dancing avatar into your real world.<br>No app needed — pure browser AR.</p>
     <div class="steps">
       <div class="step"><span class="step-num">1</span><p>Tap <strong style="color:var(--accent)">Launch AR</strong> and allow camera access</p></div>
-      <div class="step"><span class="step-num">2</span><p>Point your camera at any flat surface</p></div>
-      <div class="step"><span class="step-num">3</span><p>Tap <strong style="color:var(--accent)">Place in your world</strong> to drop the dancer</p></div>
+      <div class="step"><span class="step-num">2</span><p>Wait for the avatar to finish loading</p></div>
+      <div class="step"><span class="step-num">3</span><p>Tap <strong style="color:var(--accent)">Place in your world</strong> — point at a floor or table first</p></div>
     </div>
-
     <button id="launch-btn">🕺 Launch AR Dance</button>
-    <p class="launch-hint">Requires camera · Works on iOS &amp; Android</p>
+    <p class="launch-hint">Requires camera · Works on Android Chrome &amp; iOS Safari</p>
   </div>
 </div>
 
-<!-- ═══════════════ LOADING ══════════════════════════════ -->
+<!-- ═══════════════════ LOADING ═════════════════════════ -->
 <div id="loading-overlay">
   <div class="loading-avatar">🕺</div>
   <div class="loading-percent" id="loading-percent">0%</div>
@@ -386,37 +321,37 @@
     <div class="loading-bar-fill" id="loading-bar"></div>
   </div>
   <div class="loading-label">Loading Avatar</div>
-  <div class="loading-hint">Point at a flat surface once ready</div>
+  <div class="loading-hint">Point at a flat floor or table,<br>then tap the green button</div>
 </div>
 
-<!-- ═══════════════ AR SCREEN ═════════════════════════════
-     model-viewer is the ONLY child of #ar-screen.
-     No siblings here — all overlay UI uses position:fixed
-     so nothing affects model-viewer's layout or touch area.
-════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════ AR SCREEN ═══════════════════════
+  model-viewer is the ONLY element inside #ar-screen.
+  All UI overlays (topbar, anim controls, close btn) live
+  OUTSIDE this div and use position:fixed.
+══════════════════════════════════════════════════════ -->
 <div id="ar-screen">
   <model-viewer
-    id="model-viewer"
+    id="mv"
     src="model.glb"
     alt="Dancing Avatar"
     ar
     ar-modes="webxr scene-viewer quick-look"
     ar-placement="floor"
+    ar-scale="fixed"
     camera-controls
     auto-rotate
-    shadow-intensity="1.2"
-    shadow-softness="0.8"
+    shadow-intensity="1.5"
+    shadow-softness="1"
     exposure="1"
     environment-image="neutral"
     autoplay
   >
     <!--
-      slot="ar-button" MUST be a direct child of model-viewer.
-      The browser grants WebXR / camera permission only when the
-      initiating tap is on the model-viewer element itself.
-      Moving this button outside model-viewer and calling
-      .activateAR() programmatically is blocked by Chrome Android
-      and Safari iOS for security reasons.
+      ✅ THIS BUTTON MUST STAY INSIDE <model-viewer>.
+      Browsers only allow WebXR / camera activation from a
+      direct user gesture on the model-viewer element itself.
+      model-viewer renders slot="ar-button" content at the
+      bottom-center of the viewer — no extra positioning needed.
     -->
     <button slot="ar-button" class="slot-ar-btn">
       📷 Place in your world
@@ -424,10 +359,10 @@
   </model-viewer>
 </div>
 
-<!-- ═══════════════ FIXED OVERLAY UI ══════════════════════
-     All of these use position:fixed — they float above
-     #ar-screen without affecting model-viewer's layout.
-════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════ FIXED OVERLAYS ═════════════════
+  These are position:fixed — they float above #ar-screen
+  without touching model-viewer's layout at all.
+══════════════════════════════════════════════════════ -->
 
 <!-- Topbar -->
 <div id="ar-topbar">
@@ -435,7 +370,7 @@
   <button id="close-btn">✕</button>
 </div>
 
-<!-- Prev / Next animation buttons -->
+<!-- Prev / Next anim — only shown if GLB has > 1 animation -->
 <div id="ar-controls">
   <button class="anim-btn" id="prev-anim" style="display:none">⏮ Prev</button>
   <button class="anim-btn" id="next-anim" style="display:none">Next ⏭</button>
@@ -445,38 +380,37 @@
 <div id="no-ar-notice">
   <div class="notice-box">
     <h2>AR Not Supported</h2>
-    <p>Your browser doesn't support WebAR.<br>Try Chrome on Android or Safari on iOS 12+.</p>
+    <p>Your browser doesn't support WebAR.<br>Use <strong>Chrome on Android</strong> or <strong>Safari on iOS 12+</strong>.</p>
     <button class="notice-close" id="no-ar-close">Got it</button>
   </div>
 </div>
 
 <script>
-  // ── Elements ──────────────────────────────────────────
-  const splash        = document.getElementById('splash');
-  const launchBtn     = document.getElementById('launch-btn');
-  const loadingOv     = document.getElementById('loading-overlay');
-  const loadingPct    = document.getElementById('loading-percent');
-  const loadingBar    = document.getElementById('loading-bar');
-  const arScreen      = document.getElementById('ar-screen');
-  const mv            = document.getElementById('model-viewer');
-  const arTopbar      = document.getElementById('ar-topbar');
-  const arControls    = document.getElementById('ar-controls');
-  const closeBtn      = document.getElementById('close-btn');
-  const prevAnim      = document.getElementById('prev-anim');
-  const nextAnim      = document.getElementById('next-anim');
-  const noAr          = document.getElementById('no-ar-notice');
-  const noArClose     = document.getElementById('no-ar-close');
+  const splash       = document.getElementById('splash');
+  const launchBtn    = document.getElementById('launch-btn');
+  const loadingOv    = document.getElementById('loading-overlay');
+  const loadingPct   = document.getElementById('loading-percent');
+  const loadingBar   = document.getElementById('loading-bar');
+  const arScreen     = document.getElementById('ar-screen');
+  const mv           = document.getElementById('mv');
+  const arTopbar     = document.getElementById('ar-topbar');
+  const arControls   = document.getElementById('ar-controls');
+  const closeBtn     = document.getElementById('close-btn');
+  const prevAnim     = document.getElementById('prev-anim');
+  const nextAnim     = document.getElementById('next-anim');
+  const noAr         = document.getElementById('no-ar-notice');
+  const noArClose    = document.getElementById('no-ar-close');
 
-  let animations  = [];
-  let currentAnim = 0;
-  let modelLoaded = false;
+  let anims = [], currentAnim = 0, modelLoaded = false;
 
-  // ── Hide built-in model-viewer shadow DOM buttons ─────
-  // (screenshot, fullscreen, etc.)
+  /* ── Patch model-viewer shadow DOM ─────────────────────
+     Hides screenshot, fullscreen and any other built-in
+     buttons that model-viewer injects into its shadow root.
+  ──────────────────────────────────────────────────────── */
   function patchShadowDOM() {
     try {
-      const shadow = mv.shadowRoot;
-      if (!shadow) return;
+      const root = mv.shadowRoot;
+      if (!root) return;
       const s = document.createElement('style');
       s.textContent = `
         #default-ar-button,
@@ -486,20 +420,17 @@
         [part="default-progress-bar"],
         .fab { display: none !important; }
       `;
-      shadow.appendChild(s);
-    } catch(e) {}
+      root.appendChild(s);
+    } catch(e) { console.warn('shadowDOM patch:', e); }
   }
 
-  // ── Show / hide AR overlay ────────────────────────────
+  /* ── Screen transitions ─────────────────────────────── */
   function openAR() {
-    splash.style.display     = 'none';
+    splash.style.display = 'none';
     arScreen.classList.add('active');
     arTopbar.classList.add('active');
     arControls.classList.add('active');
-
-    if (!modelLoaded) {
-      loadingOv.classList.add('active');
-    }
+    if (!modelLoaded) loadingOv.classList.add('active');
   }
 
   function closeAR() {
@@ -508,66 +439,68 @@
     arControls.classList.remove('active');
     loadingOv.classList.remove('active');
     mv.pause();
-    // Go back to splash
     splash.style.display = 'flex';
   }
 
-  // ── model-viewer events ───────────────────────────────
+  /* ── model-viewer: loading progress ─────────────────── */
   mv.addEventListener('progress', e => {
     const pct = Math.round(e.detail.totalProgress * 100);
-    loadingBar.style.width    = pct + '%';
-    loadingPct.textContent    = pct + '%';
+    loadingBar.style.width = pct + '%';
+    loadingPct.textContent = pct + '%';
   });
 
+  /* ── model-viewer: fully loaded ─────────────────────── */
   mv.addEventListener('load', () => {
     patchShadowDOM();
     modelLoaded = true;
 
     loadingBar.style.width = '100%';
     loadingPct.textContent = '100%';
-
     setTimeout(() => loadingOv.classList.remove('active'), 450);
 
-    animations = mv.availableAnimations || [];
-    if (animations.length > 0) {
-      mv.animationName = animations[0];
+    anims = mv.availableAnimations || [];
+    if (anims.length > 0) {
+      mv.animationName = anims[0];
       mv.play({ repetitions: Infinity });
     }
 
-    // Show prev/next only if GLB has multiple animations
-    prevAnim.style.display = animations.length > 1 ? 'flex' : 'none';
-    nextAnim.style.display = animations.length > 1 ? 'flex' : 'none';
+    prevAnim.style.display = anims.length > 1 ? 'flex' : 'none';
+    nextAnim.style.display = anims.length > 1 ? 'flex' : 'none';
   });
 
-  // ── Launch button ─────────────────────────────────────
+  /* ── model-viewer: AR session started ───────────────── */
+  mv.addEventListener('ar-status', e => {
+    console.log('AR status:', e.detail.status);
+    // 'session-started' = AR camera is live
+    // 'not-presenting' = user exited AR
+    // 'failed' = AR not supported
+    if (e.detail.status === 'failed') {
+      noAr.classList.add('show');
+    }
+  });
+
+  /* ── Launch button ──────────────────────────────────── */
   launchBtn.addEventListener('click', () => {
-    // Unlock AudioContext on iOS (required before any media plays)
+    // Unlock AudioContext on iOS before any media
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) { const c = new AC(); c.resume(); }
+      if (AC) { const ctx = new AC(); ctx.resume(); }
     } catch(e) {}
-
     openAR();
   });
 
-  // ── Close button ──────────────────────────────────────
+  /* ── Close / dismiss ────────────────────────────────── */
   closeBtn.addEventListener('click', closeAR);
   noArClose.addEventListener('click', () => noAr.classList.remove('show'));
 
-  // ── Animation cycling ─────────────────────────────────
-  prevAnim.addEventListener('click', () => {
-    if (!animations.length) return;
-    currentAnim = (currentAnim - 1 + animations.length) % animations.length;
-    mv.animationName = animations[currentAnim];
+  /* ── Animation cycling ──────────────────────────────── */
+  function setAnim(idx) {
+    currentAnim = (idx + anims.length) % anims.length;
+    mv.animationName = anims[currentAnim];
     mv.play({ repetitions: Infinity });
-  });
-
-  nextAnim.addEventListener('click', () => {
-    if (!animations.length) return;
-    currentAnim = (currentAnim + 1) % animations.length;
-    mv.animationName = animations[currentAnim];
-    mv.play({ repetitions: Infinity });
-  });
+  }
+  prevAnim.addEventListener('click', () => setAnim(currentAnim - 1));
+  nextAnim.addEventListener('click', () => setAnim(currentAnim + 1));
 </script>
 </body>
 </html>
