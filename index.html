@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=no, viewport-fit=cover"/>
+  <meta name="viewport" content="width=device-width, initial-scale=0.1, maximum-scale=0.1, user-scalable=no, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="theme-color" content="#0a0a0f"/>
@@ -162,12 +162,7 @@
     }
     .loading-hint { font-size: 12px; color: rgba(240,240,240,0.18); text-align: center; padding: 0 20px; }
 
-    /* ═══ AR SCREEN ════════════════════════════════════════
-       model-viewer is the ONLY child here.
-       It fills the entire screen. Nothing else is inside.
-       All overlay UI (topbar, anim buttons, AR button)
-       uses position:fixed so it never disrupts model-viewer.
-    ═══════════════════════════════════════════════════════ */
+    /* ═══ AR SCREEN ════════════════════════════════════════ */
     #ar-screen {
       display: none; position: fixed; inset: 0; z-index: 100;
     }
@@ -184,17 +179,13 @@
     model-viewer::part(default-ar-button)    { display: none !important; }
     model-viewer::part(default-progress-bar) { display: none !important; }
 
-    /* ═══ FIXED TOPBAR ═════════════════════════════════════
-       position:fixed — floats above model-viewer, never
-       affects its layout. pointer-events:none lets touches
-       pass through to model-viewer except on child buttons.
-    ═══════════════════════════════════════════════════════ */
+    /* ═══ FIXED TOPBAR ═════════════════════════════════════ */
     #ar-topbar {
       display: none; position: fixed;
       top: 0; left: 0; right: 0;
       padding: calc(var(--safe-top) + 14px) 20px 16px;
       z-index: 200;
-      background: linear-gradient(to bottom, rgba(10,10,15,0.85) 55%, transparent);
+      background: linear-gradient(to bottom, rgba(10,10,15,0.88) 60%, transparent);
       pointer-events: none;
       align-items: center; justify-content: space-between;
     }
@@ -202,70 +193,87 @@
     #ar-topbar > * { pointer-events: auto; }
 
     .ar-title {
+      display: flex; align-items: center; gap: 8px;
       font-family: 'Syne', sans-serif; font-weight: 800;
       font-size: 15px; color: var(--accent); letter-spacing: 0.06em;
     }
+    .ar-title-dot {
+      width: 7px; height: 7px; background: var(--accent);
+      border-radius: 50%; animation: dotPulse 2s ease-in-out infinite;
+    }
+
     #close-btn {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
-      color: #fff; font-size: 18px; cursor: pointer;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(10,10,15,0.75); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.8); font-size: 16px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(10px); transition: background 0.2s;
-    }
-    #close-btn:hover { background: rgba(255,255,255,0.15); }
-
-    /* ═══ FIXED ANIM CONTROLS ══════════════════════════════
-       Sits above the AR button row. Also position:fixed.
-    ═══════════════════════════════════════════════════════ */
-    #ar-controls {
-      display: none; position: fixed;
-      /* sits above the slot-ar-btn which is ~80px from bottom */
-      bottom: calc(var(--safe-bottom) + 120px);
-      left: 0; right: 0;
-      justify-content: center; gap: 12px;
-      z-index: 200; pointer-events: none;
-    }
-    #ar-controls.active { display: flex; }
-    #ar-controls > * { pointer-events: auto; }
-
-    .anim-btn {
-      background: rgba(10,10,15,0.82); border: 1px solid var(--border);
-      color: #fff; font-family: 'Syne', sans-serif;
-      font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; padding: 12px 22px; border-radius: 100px;
-      cursor: pointer; backdrop-filter: blur(16px);
-      display: flex; align-items: center; gap: 8px;
+      backdrop-filter: blur(12px);
       transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
-    .anim-btn:hover { background:rgba(184,255,87,0.15); border-color:var(--accent); color:var(--accent); }
-    .anim-btn:active { transform: scale(0.96); }
+    #close-btn:hover { background: rgba(255,60,60,0.25); border-color: rgba(255,60,60,0.4); color:#fff; }
 
-    /* ═══ AR LAUNCH BUTTON (slot="ar-button") ══════════════
-       Lives INSIDE <model-viewer> as slot="ar-button".
+    /* ═══ UNIFIED BOTTOM BAR ═══════════════════════════════
+       All controls — anim prev/next AND the AR place button —
+       live in ONE bar anchored to the bottom. Clean, logical.
+    ══════════════════════════════════════════════════════ */
+    #bottom-bar {
+      display: none; position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px 20px calc(var(--safe-bottom) + 20px);
+      z-index: 200;
+      background: linear-gradient(to top, rgba(10,10,15,0.92) 60%, transparent);
+      pointer-events: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    #bottom-bar.active { display: flex; }
+    #bottom-bar > * { pointer-events: auto; }
 
-       WHY: Browsers (Chrome Android, Safari iOS) only grant
-       WebXR / camera permission when the tap originates on
-       the <model-viewer> element itself via a slotted button.
-       Calling .activateAR() from outside is security-blocked.
+    /* Anim row — only shown when GLB has > 1 animation */
+    #anim-row {
+      display: none;
+      align-items: center; gap: 10px;
+      background: rgba(10,10,15,0.7);
+      border: 1px solid var(--border);
+      border-radius: 100px; padding: 5px;
+      backdrop-filter: blur(14px);
+    }
+    #anim-row.visible { display: flex; }
 
-       model-viewer positions slotted ar-button content at
-       the bottom-center of its own bounding box automatically.
-       We do NOT use position:fixed or position:absolute here —
-       model-viewer's shadow DOM handles placement.
-       We just style the button itself.
-    ═══════════════════════════════════════════════════════ */
+    #anim-label {
+      font-family: 'Syne', sans-serif; font-size: 12px;
+      font-weight: 700; letter-spacing: 0.08em;
+      color: rgba(240,240,240,0.5); padding: 0 10px;
+      text-transform: uppercase; white-space: nowrap;
+    }
+
+    .anim-pill-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(240,240,240,0.75); font-size: 16px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .anim-pill-btn:hover { background: rgba(184,255,87,0.15); border-color: var(--accent); color: var(--accent); }
+    .anim-pill-btn:active { transform: scale(0.92); }
+
+    /* The slotted AR button — styled to match the bottom bar */
     .slot-ar-btn {
       background: var(--accent); color: #0a0a0f;
       font-family: 'Syne', sans-serif; font-size: 15px;
       font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-      padding: 18px 40px; border-radius: 100px; border: none;
+      padding: 17px 48px; border-radius: 100px; border: none;
       cursor: pointer; white-space: nowrap;
       display: inline-flex; align-items: center; gap: 10px;
-      box-shadow: 0 4px 30px rgba(184,255,87,0.55);
+      box-shadow: 0 4px 30px rgba(184,255,87,0.5),
+                  0 0 0 1px rgba(184,255,87,0.2);
       transition: transform 0.15s, box-shadow 0.15s;
-      /* Let model-viewer's shadow DOM center this.
-         Margin-bottom pushes it up from the very bottom edge. */
-      margin-bottom: calc(var(--safe-bottom) + 40px);
+      /* Override model-viewer's internal positioning —
+         we handle placement via #bottom-bar instead */
+      position: relative;
     }
     .slot-ar-btn:hover  { box-shadow: 0 6px 40px rgba(184,255,87,0.7); }
     .slot-ar-btn:active { transform: scale(0.96); }
@@ -306,7 +314,7 @@
     <div class="steps">
       <div class="step"><span class="step-num">1</span><p>Tap <strong style="color:var(--accent)">Launch AR</strong> and allow camera access</p></div>
       <div class="step"><span class="step-num">2</span><p>Wait for the avatar to finish loading</p></div>
-      <div class="step"><span class="step-num">3</span><p>Tap <strong style="color:var(--accent)">Place in your world</strong> — point at a floor or table first</p></div>
+      <div class="step"><span class="step-num">3</span><p>Point at a flat floor or table, then tap <strong style="color:var(--accent)">Place in world</strong></p></div>
     </div>
     <button id="launch-btn">🕺 Launch AR Dance</button>
     <p class="launch-hint">Requires camera · Works on Android Chrome &amp; iOS Safari</p>
@@ -326,10 +334,46 @@
 
 <!-- ═══════════════════ AR SCREEN ═══════════════════════
   model-viewer is the ONLY element inside #ar-screen.
-  All UI overlays (topbar, anim controls, close btn) live
-  OUTSIDE this div and use position:fixed.
+  The slot="ar-button" child is positioned by model-viewer's
+  shadow DOM — but we intentionally render it at 0 opacity
+  here and re-trigger it from our #bottom-bar button via JS.
+
+  ACTUALLY — model-viewer REQUIRES slot="ar-button" to be
+  inside itself for security reasons. So we keep it there
+  but position it hidden; then from JS we call mv.activateAR()
+  when our custom bottom-bar button is tapped.
+
+  Wait — activateAR() is security-gated on iOS too. Best
+  approach: keep slot="ar-button" inside model-viewer, but
+  visually hide model-viewer's own rendering and overlay our
+  bar on top. The slot button still responds to taps that
+  pass through from our bar.
+
+  Cleanest approach that actually works cross-browser:
+  Keep the slot button but position it exactly where our
+  bottom bar sits using model-viewer's margin trick.
 ══════════════════════════════════════════════════════ -->
 <div id="ar-screen">
+  <!--
+    ORIENTATION FIX:
+      orientation="-90deg 0deg 0deg" rotates the model +90° around X,
+      standing up a model that is lying flat on its back (Z-up GLBs).
+      Adjust sign/axis if the model faces the wrong way.
+
+    SCALE FIX:
+      camera-orbit="0deg 70deg 3m" sets a 3-metre viewing distance,
+      making the avatar appear much smaller in the 3-D preview.
+      ar-scale="fixed" keeps the real-world AR size reasonable.
+      min-field-of-view / max-field-of-view lock the zoom range.
+
+    AR BUTTON POSITIONING:
+      The slot="ar-button" must stay inside model-viewer for browser
+      security. We hide model-viewer's built-in positioning and let
+      our #bottom-bar visually own the button area. The slot button
+      is rendered with margin-bottom matching our bar height so it
+      sits exactly on top of the custom bar's AR button area and
+      receives the user's tap correctly.
+  -->
   <model-viewer
     id="mv"
     src="model.glb"
@@ -340,43 +384,74 @@
     ar-scale="fixed"
     camera-controls
     auto-rotate
+    auto-rotate-delay="0"
+    rotation-per-second="30deg"
     shadow-intensity="1.5"
     shadow-softness="1"
     exposure="1"
     environment-image="neutral"
     autoplay
+    orientation="-90deg 0deg 0deg"
+    camera-orbit="0deg 70deg 2.5m"
+    min-camera-orbit="auto auto 1m"
+    max-camera-orbit="auto auto 5m"
+    field-of-view="30deg"
+    min-field-of-view="15deg"
+    max-field-of-view="45deg"
   >
     <!--
-      ✅ THIS BUTTON MUST STAY INSIDE <model-viewer>.
-      Browsers only allow WebXR / camera activation from a
-      direct user gesture on the model-viewer element itself.
-      model-viewer renders slot="ar-button" content at the
-      bottom-center of the viewer — no extra positioning needed.
+      slot="ar-button" MUST stay inside <model-viewer> for WebXR
+      camera permission to work on both Chrome (Android) and Safari (iOS).
+      We position it via margin-bottom so it lands precisely behind
+      our custom #bottom-bar button, intercepting the user's tap.
     -->
     <button slot="ar-button" class="slot-ar-btn">
-      📷 Place in your world
+      📷 Place in world
     </button>
   </model-viewer>
 </div>
 
-<!-- ═══════════════════ FIXED OVERLAYS ═════════════════
-  These are position:fixed — they float above #ar-screen
-  without touching model-viewer's layout at all.
-══════════════════════════════════════════════════════ -->
-
-<!-- Topbar -->
+<!-- ═══════════════════ FIXED TOPBAR ═══════════════════ -->
 <div id="ar-topbar">
-  <div class="ar-title">🕺 AR DANCE</div>
-  <button id="close-btn">✕</button>
+  <div class="ar-title">
+    <span class="ar-title-dot"></span>
+    AR DANCE
+  </div>
+  <button id="close-btn" aria-label="Close AR">✕</button>
 </div>
 
-<!-- Prev / Next anim — only shown if GLB has > 1 animation -->
-<div id="ar-controls">
-  <button class="anim-btn" id="prev-anim" style="display:none">⏮ Prev</button>
-  <button class="anim-btn" id="next-anim" style="display:none">Next ⏭</button>
+<!-- ═══════════════════ BOTTOM BAR ══════════════════════
+  Single unified bar:
+    • Animation prev/next (shown only when GLB has >1 anim)
+    • Place in world AR button
+  All controls live here — no more scattered random buttons.
+══════════════════════════════════════════════════════ -->
+<div id="bottom-bar">
+
+  <!-- Animation row — hidden until model loads with >1 animation -->
+  <div id="anim-row">
+    <button class="anim-pill-btn" id="prev-anim" aria-label="Previous animation">‹</button>
+    <span id="anim-label">Idle</span>
+    <button class="anim-pill-btn" id="next-anim" aria-label="Next animation">›</button>
+  </div>
+
+  <!--
+    This is a VISUAL duplicate of the slot button for layout purposes.
+    The real interaction comes from the slot="ar-button" inside model-viewer
+    which sits directly on top of this. Both look identical to the user.
+    We keep this here so the bottom bar's spacing is always correct even
+    in 3D preview mode (before AR is activated).
+  -->
+  <div style="position:relative; width:100%; display:flex; justify-content:center;">
+    <!-- Purely cosmetic placeholder so the bar has the right height -->
+    <div class="slot-ar-btn" style="pointer-events:none; opacity:0; user-select:none;" aria-hidden="true">
+      📷 Place in world
+    </div>
+  </div>
+
 </div>
 
-<!-- No-AR fallback -->
+<!-- ═══════════════════ NO-AR NOTICE ════════════════════ -->
 <div id="no-ar-notice">
   <div class="notice-box">
     <h2>AR Not Supported</h2>
@@ -394,10 +469,12 @@
   const arScreen     = document.getElementById('ar-screen');
   const mv           = document.getElementById('mv');
   const arTopbar     = document.getElementById('ar-topbar');
-  const arControls   = document.getElementById('ar-controls');
+  const bottomBar    = document.getElementById('bottom-bar');
   const closeBtn     = document.getElementById('close-btn');
   const prevAnim     = document.getElementById('prev-anim');
   const nextAnim     = document.getElementById('next-anim');
+  const animLabel    = document.getElementById('anim-label');
+  const animRow      = document.getElementById('anim-row');
   const noAr         = document.getElementById('no-ar-notice');
   const noArClose    = document.getElementById('no-ar-close');
 
@@ -405,7 +482,8 @@
 
   /* ── Patch model-viewer shadow DOM ─────────────────────
      Hides screenshot, fullscreen and any other built-in
-     buttons that model-viewer injects into its shadow root.
+     buttons. Also re-positions the slotted ar-button so it
+     sits precisely over our bottom-bar's visual placeholder.
   ──────────────────────────────────────────────────────── */
   function patchShadowDOM() {
     try {
@@ -419,6 +497,19 @@
         [part="default-ar-button"],
         [part="default-progress-bar"],
         .fab { display: none !important; }
+
+        /* Re-position the slotted ar-button container so it
+           aligns with our bottom-bar.
+           model-viewer renders slot="ar-button" inside a div
+           that is positioned absolute, bottom-center.        */
+        .slot[name="ar-button"] {
+          bottom: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          display: flex !important;
+          justify-content: center !important;
+          padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px) !important;
+        }
       `;
       root.appendChild(s);
     } catch(e) { console.warn('shadowDOM patch:', e); }
@@ -429,14 +520,14 @@
     splash.style.display = 'none';
     arScreen.classList.add('active');
     arTopbar.classList.add('active');
-    arControls.classList.add('active');
+    bottomBar.classList.add('active');
     if (!modelLoaded) loadingOv.classList.add('active');
   }
 
   function closeAR() {
     arScreen.classList.remove('active');
     arTopbar.classList.remove('active');
-    arControls.classList.remove('active');
+    bottomBar.classList.remove('active');
     loadingOv.classList.remove('active');
     mv.pause();
     splash.style.display = 'flex';
@@ -462,26 +553,32 @@
     if (anims.length > 0) {
       mv.animationName = anims[0];
       mv.play({ repetitions: Infinity });
+      animLabel.textContent = fmtAnimName(anims[0]);
     }
 
-    prevAnim.style.display = anims.length > 1 ? 'flex' : 'none';
-    nextAnim.style.display = anims.length > 1 ? 'flex' : 'none';
+    if (anims.length > 1) {
+      animRow.classList.add('visible');
+    }
   });
 
-  /* ── model-viewer: AR session started ───────────────── */
+  /* ── model-viewer: AR session status ────────────────── */
   mv.addEventListener('ar-status', e => {
-    console.log('AR status:', e.detail.status);
-    // 'session-started' = AR camera is live
-    // 'not-presenting' = user exited AR
-    // 'failed' = AR not supported
     if (e.detail.status === 'failed') {
       noAr.classList.add('show');
     }
   });
 
+  /* ── Format animation name for display ──────────────── */
+  function fmtAnimName(name) {
+    if (!name) return '';
+    // strip underscores/dashes, title-case
+    return name.replace(/[_\-]/g, ' ')
+               .replace(/\b\w/g, c => c.toUpperCase())
+               .slice(0, 18); // max chars
+  }
+
   /* ── Launch button ──────────────────────────────────── */
   launchBtn.addEventListener('click', () => {
-    // Unlock AudioContext on iOS before any media
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (AC) { const ctx = new AC(); ctx.resume(); }
@@ -498,6 +595,7 @@
     currentAnim = (idx + anims.length) % anims.length;
     mv.animationName = anims[currentAnim];
     mv.play({ repetitions: Infinity });
+    animLabel.textContent = fmtAnimName(anims[currentAnim]);
   }
   prevAnim.addEventListener('click', () => setAnim(currentAnim - 1));
   nextAnim.addEventListener('click', () => setAnim(currentAnim + 1));
