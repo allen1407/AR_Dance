@@ -64,7 +64,6 @@
       50%      { transform:translate(30px,-30px); }
     }
 
-    /* ── Main card ── */
     .card {
       position: relative;
       background: var(--glass);
@@ -198,7 +197,6 @@
       z-index: 100;
       display: none;
       flex-direction: column;
-      background: transparent; /* transparent — don't block WebXR camera feed */
     }
 
     .ar-overlay.active { display: flex; }
@@ -206,11 +204,11 @@
     model-viewer {
       width: 100%;
       flex: 1;
-      background-color: #111118;
+      background-color: transparent;
       --poster-color: #0a0a0f;
+      --progress-bar-color: transparent;
     }
 
-    /* Hide model-viewer's default floating AR button */
     model-viewer::part(default-ar-button) { display: none; }
 
     /* ── Top bar ── */
@@ -223,7 +221,6 @@
       justify-content: space-between;
       z-index: 200;
       background: linear-gradient(to bottom, rgba(10,10,15,0.85), transparent);
-      /* Allow touches to pass through to model-viewer where there's no button */
       pointer-events: none;
     }
 
@@ -290,12 +287,7 @@
 
     .ar-btn:hover { background:rgba(184,255,87,0.15); border-color:var(--accent); color:var(--accent); }
 
-    /*
-     * The "View in AR" button is slotted INSIDE model-viewer.
-     * model-viewer positions slot="ar-button" elements itself,
-     * and the browser recognises the tap as a direct gesture on
-     * the WebXR element — this is what triggers the camera permission.
-     */
+    /* AR launch button slotted inside model-viewer */
     .slot-ar-btn {
       background: var(--accent);
       color: #0a0a0f;
@@ -314,7 +306,6 @@
       box-shadow: 0 4px 30px rgba(184,255,87,0.45);
       transition: background 0.2s, transform 0.15s;
       -webkit-tap-highlight-color: transparent;
-      /* model-viewer places the slotted button at bottom-center automatically */
       position: absolute;
       bottom: 40px;
       left: 50%;
@@ -452,7 +443,7 @@
       <button class="close-btn" id="closeBtn">✕</button>
     </div>
 
-    <!-- Loading screen sits above model-viewer -->
+    <!-- Loading screen -->
     <div class="loading-screen" id="loadingScreen">
       <div class="loading-avatar">🕺</div>
       <div class="loading-percent" id="loadingPercent">0%</div>
@@ -464,12 +455,11 @@
     </div>
 
     <!--
-      ✅ THE FIX:
-      The AR button is placed INSIDE model-viewer using slot="ar-button".
-      This is the ONLY way browsers grant camera/WebXR permission reliably —
-      the tap must be a direct user gesture on the model-viewer element itself.
-      A button outside calling activateAR() programmatically is blocked on
-      most mobile browsers (Chrome Android, Safari iOS) for security reasons.
+      ar-modes order matters:
+      - webxr   → Chrome Android (pure camera AR)
+      - scene-viewer → Google Scene Viewer (native Android AR app)
+      - quick-look   → iOS AR Quick Look (native iOS AR)
+      No fallback 3D viewer shown to user — loading screen covers it until AR launches.
     -->
     <model-viewer
       id="modelViewer"
@@ -484,12 +474,13 @@
       environment-image="neutral"
       autoplay
     >
+      <!-- Must be slotted inside model-viewer for browser gesture trust -->
       <button slot="ar-button" class="slot-ar-btn">
         📷 View in AR
       </button>
     </model-viewer>
 
-    <!-- Anim prev/next — only shown if GLB has multiple animations -->
+    <!-- Animation controls (only shown if GLB has multiple animations) -->
     <div class="ar-controls">
       <button class="ar-btn" id="prevAnim" style="display:none">⏮ Prev</button>
       <button class="ar-btn" id="nextAnim" style="display:none">Next ⏭</button>
@@ -521,7 +512,26 @@
     let currentAnim = 0;
     let modelLoaded = false;
 
-    // ── Loading progress ──
+    // Inject styles into shadow DOM to hide screenshot / fullscreen / any extra UI
+    function hideShadowButtons() {
+      try {
+        const shadow = modelViewer.shadowRoot;
+        if (!shadow) return;
+        const style = document.createElement('style');
+        style.textContent = `
+          #default-ar-button,
+          #fullscreen-button,
+          #screenshot-button,
+          [part="default-ar-button"],
+          [slot="poster"],
+          .fab,
+          .slot[name="poster"] { display: none !important; }
+        `;
+        shadow.appendChild(style);
+      } catch(e) {}
+    }
+
+    // Loading progress
     modelViewer.addEventListener('progress', (e) => {
       const pct = Math.round(e.detail.totalProgress * 100);
       loadingBar.style.width = pct + '%';
@@ -529,10 +539,11 @@
     });
 
     modelViewer.addEventListener('load', () => {
+      hideShadowButtons();
+
       modelLoaded = true;
       loadingBar.style.width = '100%';
       loadingPercent.textContent = '100%';
-
       setTimeout(() => loadingScreen.classList.add('hidden'), 400);
 
       animations = modelViewer.availableAnimations || [];
@@ -545,7 +556,7 @@
       nextAnim.style.display = animations.length > 1 ? 'flex' : 'none';
     });
 
-    // ── Open AR view ──
+    // Open AR view
     danceBtn.addEventListener('click', () => {
       danceBtn.classList.add('dancing');
       setTimeout(() => danceBtn.classList.remove('dancing'), 600);
@@ -564,13 +575,13 @@
       }
     });
 
-    // ── Close ──
+    // Close
     closeBtn.addEventListener('click', () => {
       arOverlay.classList.remove('active');
       modelViewer.pause();
     });
 
-    // ── Animation cycling ──
+    // Animation cycling
     prevAnim.addEventListener('click', () => {
       if (!animations.length) return;
       currentAnim = (currentAnim - 1 + animations.length) % animations.length;
