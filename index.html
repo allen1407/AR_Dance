@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>AR Dance</title>
+
+  <!-- model-viewer for AR + GLB support -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400&display=swap');
+
+    :root {
+      --bg: #0a0a0f;
+      --accent: #b8ff57;
+      --accent2: #ff57b8;
+      --text: #f0f0f0;
+      --glass: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(184,255,87,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(184,255,87,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      animation: gridDrift 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridDrift {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+
+    /* Glow orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      pointer-events: none;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: var(--accent);
+      top: -200px; left: -150px;
+      animation: orbFloat 8s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: var(--accent2);
+      bottom: -150px; right: -100px;
+      animation: orbFloat 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0,0); }
+      50% { transform: translate(30px, -30px); }
+    }
+
+    /* Main card */
+    .card {
+      position: relative;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 56px 48px 48px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 0 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(184,255,87,0.1);
+      border: 1px solid rgba(184,255,87,0.25);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 6vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, var(--accent), #57ffdc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      color: rgba(240,240,240,0.45);
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 42px;
+      font-weight: 300;
+    }
+
+    /* THE button */
+    .dance-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--accent);
+      color: #0a0a0f;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 16px;
+      padding: 18px 36px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 0 0 0 rgba(184,255,87,0.4);
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .dance-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      border-radius: inherit;
+    }
+
+    .dance-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 40px rgba(184,255,87,0.4);
+    }
+
+    .dance-btn:active {
+      transform: translateY(0);
+    }
+
+    .dance-btn.dancing {
+      animation: btnPop 0.4s cubic-bezier(0.36,0.07,0.19,0.97);
+      box-shadow: 0 0 60px rgba(184,255,87,0.6);
+    }
+
+    @keyframes btnPop {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.06); }
+      60%  { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+
+    .btn-icon {
+      font-size: 18px;
+      display: inline-block;
+    }
+
+    .dance-btn.dancing .btn-icon {
+      animation: iconBounce 0.4s ease infinite alternate;
+    }
+
+    @keyframes iconBounce {
+      from { transform: rotate(-10deg) scale(1); }
+      to   { transform: rotate(10deg) scale(1.2); }
+    }
+
+    /* model-viewer fullscreen overlay */
+    .ar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      background: #000;
+    }
+
+    .ar-overlay.active {
+      display: flex;
+    }
+
+    model-viewer {
+      width: 100%;
+      flex: 1;
+      background-color: transparent;
+      --poster-color: transparent;
+    }
+
+    .ar-topbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 200;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+    }
+
+    .ar-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .close-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #fff;
+      border-radius: 50%;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      backdrop-filter: blur(10px);
+      transition: background 0.2s;
+    }
+
+    .close-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* Bottom controls inside AR view */
+    .ar-controls {
+      position: absolute;
+      bottom: 40px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      z-index: 200;
+      flex-wrap: wrap;
+      padding: 0 16px;
+    }
+
+    .ar-btn {
+      background: rgba(10,10,15,0.75);
+      border: 1px solid var(--border);
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 12px 22px;
+      border-radius: 100px;
+      cursor: pointer;
+      backdrop-filter: blur(16px);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ar-btn:hover { background: rgba(184,255,87,0.15); border-color: var(--accent); color: var(--accent); }
+
+    .ar-btn.primary {
+      background: var(--accent);
+      color: #0a0a0f;
+      border-color: var(--accent);
+    }
+
+    .ar-btn.primary:hover { background: #d4ff7a; }
+
+    /* Info footer */
+    .info {
+      margin-top: 28px;
+      font-size: 11px;
+      color: rgba(240,240,240,0.2);
+      letter-spacing: 0.05em;
+    }
+
+    /* No-AR notice */
+    #no-ar-notice {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #no-ar-notice.show { display: flex; }
+
+    .notice-box {
+      background: #1a1a24;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 36px;
+      max-width: 340px;
+      text-align: center;
+    }
+
+    .notice-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+    }
+
+    .notice-box p {
+      font-size: 13px;
+      margin-bottom: 28px;
+      color: rgba(240,240,240,0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- Main UI card -->
+  <div class="card">
+    <div class="badge">WebAR Experience</div>
+    <h1>Make it<br><span>Dance. 💃</span></h1>
+    <p>Tap the button to launch your avatar in AR. Point your camera at a flat surface and watch the magic.</p>
+
+    <button class="dance-btn" id="danceBtn">
+      <span class="btn-icon">🕺</span>
+      Launch AR Dance
+    </button>
+
+    <div class="info">Requires camera · Works on iOS & Android</div>
+  </div>
+
+  <!-- AR overlay with model-viewer -->
+  <div class="ar-overlay" id="arOverlay">
+    <div class="ar-topbar">
+      <div class="ar-title">🕺 AR DANCE</div>
+      <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+
+    <model-viewer
+      id="modelViewer"
+      src="model.GLB"
+      alt="Dancing Avatar"
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      camera-controls
+      auto-rotate
+      shadow-intensity="1"
+      exposure="1"
+      environment-image="neutral"
+      animation-name=""
+      autoplay
+    ></model-viewer>
+
+    <div class="ar-controls">
+      <button class="ar-btn primary" id="arBtn">
+        📷 View in AR
+      </button>
+      <button class="ar-btn" id="prevAnim">⏮ Prev</button>
+      <button class="ar-btn" id="nextAnim">Next ⏭</button>
+    </div>
+  </div>
+
+  <!-- No-AR fallback notice -->
+  <div id="no-ar-notice">
+    <div class="notice-box">
+      <h2>AR Not Available</h2>
+      <p>Your device or browser doesn't support AR. Try opening this in Safari on iOS or Chrome on Android.</p>
+      <button class="ar-btn primary" onclick="document.getElementById('no-ar-notice').classList.remove('show')">Got it</button>
+    </div>
+  </div>
+
+  <script>
+    const danceBtn   = document.getElementById('danceBtn');
+    const arOverlay  = document.getElementById('arOverlay');
+    const closeBtn   = document.getElementById('closeBtn');
+    const arBtn      = document.getElementById('arBtn');
+    const modelViewer= document.getElementById('modelViewer');
+    const prevAnim   = document.getElementById('prevAnim');
+    const nextAnim   = document.getElementById('nextAnim');
+    const noArNotice = document.getElementById('no-ar-notice');
+
+    let animations  = [];
+    let currentAnim = 0;
+
+    // Once model loads, grab animation list
+    modelViewer.addEventListener('load', () => {
+      animations = modelViewer.availableAnimations || [];
+      console.log('Animations found:', animations);
+
+      if (animations.length > 0) {
+        modelViewer.animationName = animations[0];
+        modelViewer.play({ repetitions: Infinity });
+      }
+
+      // Show/hide nav buttons
+      const hasMulti = animations.length > 1;
+      prevAnim.style.display = hasMulti ? 'flex' : 'none';
+      nextAnim.style.display = hasMulti ? 'flex' : 'none';
+    });
+
+    // Open AR view
+    danceBtn.addEventListener('click', () => {
+      danceBtn.classList.add('dancing');
+      setTimeout(() => danceBtn.classList.remove('dancing'), 600);
+
+      arOverlay.classList.add('active');
+
+      // Autoplay first animation
+      if (animations.length > 0) {
+        modelViewer.animationName = animations[currentAnim];
+        modelViewer.play({ repetitions: Infinity });
+      }
+    });
+
+    // Close AR overlay
+    closeBtn.addEventListener('click', () => {
+      arOverlay.classList.remove('active');
+      modelViewer.pause();
+    });
+
+    // Launch native AR
+    arBtn.addEventListener('click', () => {
+      if (modelViewer.canActivateAR) {
+        modelViewer.activateAR();
+      } else {
+        noArNotice.classList.add('show');
+      }
+    });
+
+    // Animation cycling
+    prevAnim.addEventListener('click', () => {
+      if (!animations.length) return;
+      currentAnim = (currentAnim - 1 + animations.length) % animations.length;
+      modelViewer.animationName = animations[currentAnim];
+      modelViewer.play({ repetitions: Infinity });
+    });
+
+    nextAnim.addEventListener('click', () => {
+      if (!animations.length) return;
+      currentAnim = (currentAnim + 1) % animations.length;
+      modelViewer.animationName = animations[currentAnim];
+      modelViewer.play({ repetitions: Infinity });
+    });
+  </script>
+</body>
+</html>
