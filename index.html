@@ -1,489 +1,598 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=0.01, maximum-scale=0.01, user-scalable=no, viewport-fit=cover"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="theme-color" content="#0a0a0f"/>
-  <title>AR Dance</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0f1e">
+<title>AR · Floor Projection</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #0a0f1e;
+  --gold:   #f5c842;
+  --teal:   #00d4b4;
+  --teal2:  #00a88e;
+  --border: rgba(255,255,255,0.10);
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: var(--font-body);
+  background: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+canvas { display: block; }
 
-  <style>
-    :root {
-      --bg:      #0a0a0f;
-      --accent:  #b8ff57;
-      --accent2: #ff57b8;
-      --text:    #f0f0f0;
-      --glass:   rgba(255,255,255,0.04);
-      --border:  rgba(255,255,255,0.08);
-      --safe-top:    env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      width: 100%; height: 100%; overflow: hidden;
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg); color: var(--text);
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-    }
+/* ── Splash ── */
+#splash {
+  position: fixed; inset: 0; z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ink);
+  background-image:
+    radial-gradient(ellipse 60% 40% at 50% 0%,  rgba(0,212,180,0.13) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 80%,  rgba(245,200,66,0.08) 0%, transparent 60%);
+}
+#splash::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg,  transparent, transparent 39px, rgba(255,255,255,0.02) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px);
+}
+#splash-card {
+  position: relative;
+  width: min(360px, calc(100vw - 32px));
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 28px; padding: 36px 28px 32px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes cardIn {
+  from { opacity:0; transform: translateY(32px) scale(0.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+.splash-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgba(0,212,180,0.15), rgba(0,212,180,0.05));
+  border: 1px solid rgba(0,212,180,0.3); border-radius: 40px;
+  padding: 4px 12px; font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  color: var(--teal); font-family: var(--font-head); margin-bottom: 16px; text-transform: uppercase;
+}
+.splash-title {
+  font-family: var(--font-head); font-size: clamp(28px,8vw,36px);
+  font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -1px; margin-bottom: 6px;
+}
+.splash-title span {
+  background: linear-gradient(135deg, var(--gold), var(--teal));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.splash-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 28px; }
 
-    /* ═══ SPLASH ══════════════════════════════════════════ */
-    #splash {
-      position: fixed; inset: 0; z-index: 2000;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--bg);
-    }
-    #splash::before {
-      content: ''; position: absolute; inset: 0;
-      background-image:
-        linear-gradient(rgba(184,255,87,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(184,255,87,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      animation: gridDrift 20s linear infinite; pointer-events: none;
-    }
-    @keyframes gridDrift { 0%{transform:translateY(0)} 100%{transform:translateY(60px)} }
-    .orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15; pointer-events: none; }
-    .orb-1 { width:500px;height:500px;background:var(--accent);top:-200px;left:-150px;animation:orbFloat 8s ease-in-out infinite; }
-    .orb-2 { width:400px;height:400px;background:var(--accent2);bottom:-150px;right:-100px;animation:orbFloat 10s ease-in-out infinite reverse; }
-    @keyframes orbFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-30px)} }
+.steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+.step {
+  display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+.step-num {
+  min-width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800; font-family: var(--font-head);
+  background: linear-gradient(135deg, var(--teal), #00b4a0); color: var(--ink);
+}
+.step p { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; }
+.step p strong { color: var(--teal); }
 
-    #splash-card {
-      position: relative; z-index: 1;
-      background: var(--glass); border: 1px solid var(--border);
-      border-radius: 28px; padding: 52px 44px 44px;
-      text-align: center; max-width: 400px; width: 90%;
-      backdrop-filter: blur(24px);
-      box-shadow: 0 0 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
-      animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
-    }
-    @keyframes cardIn {
-      from { opacity:0; transform:translateY(28px) scale(0.97); }
-      to   { opacity:1; transform:translateY(0) scale(1); }
-    }
-    .badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(184,255,87,0.1); border: 1px solid rgba(184,255,87,0.25);
-      color: var(--accent); font-size: 11px; font-weight: 600;
-      letter-spacing: 0.12em; text-transform: uppercase;
-      padding: 5px 14px; border-radius: 100px; margin-bottom: 26px;
-    }
-    .badge::before {
-      content: ''; width: 6px; height: 6px;
-      background: var(--accent); border-radius: 50%;
-      animation: dotPulse 2s ease-in-out infinite;
-    }
-    @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
-    .splash-title {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(2rem,8vw,2.8rem); font-weight: 800;
-      line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 12px;
-    }
-    .splash-title span {
-      background: linear-gradient(135deg, var(--accent), #57ffdc);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .splash-sub {
-      font-size: 13px; line-height: 1.65;
-      color: rgba(240,240,240,0.42); font-weight: 300; margin-bottom: 36px;
-    }
-    .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; text-align: left; }
-    .step {
-      display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px;
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 12px;
-    }
-    .step-num {
-      min-width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px; font-weight: 800; font-family: 'Syne', sans-serif;
-      background: linear-gradient(135deg, var(--accent), #57ffdc); color: #0a0a0f;
-    }
-    .step p { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; }
-    #launch-btn {
-      width: 100%; padding: 17px 20px; border: none; outline: none;
-      border-radius: 100px; font-family: 'Syne', sans-serif;
-      font-size: 15px; font-weight: 700; letter-spacing: 0.04em;
-      cursor: pointer; position: relative; overflow: hidden;
-      background: var(--accent); color: #0a0a0f;
-      box-shadow: 0 8px 32px rgba(184,255,87,0.35);
-      transition: transform 0.15s;
-    }
-    #launch-btn::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg,rgba(255,255,255,0.18),transparent);
-    }
-    #launch-btn:active { transform: scale(0.97); }
-    .launch-hint { margin-top: 20px; font-size: 11px; color: rgba(240,240,240,0.18); letter-spacing: 0.05em; }
+#start-btn {
+  width: 100%; padding: 15px 20px; border: none; border-radius: 40px;
+  font-family: var(--font-head); font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
+  cursor: pointer; background: linear-gradient(135deg, var(--teal), #e6a800); color: var(--ink);
+  box-shadow: 0 8px 32px rgba(0,212,180,0.35);
+  transition: transform 0.15s, opacity 0.2s;
+}
+#start-btn:active { transform: scale(0.97); }
+#start-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* ═══ LOADING ═════════════════════════════════════════ */
-    #loading-overlay {
-      display: none; position: fixed; inset: 0; z-index: 1500;
-      background: var(--bg); flex-direction: column;
-      align-items: center; justify-content: center; gap: 24px;
-    }
-    #loading-overlay.active { display: flex; }
-    .loading-avatar { font-size: 52px; animation: avatarBob 1s ease-in-out infinite alternate; }
-    @keyframes avatarBob { from{transform:translateY(0) rotate(-5deg)} to{transform:translateY(-12px) rotate(5deg)} }
-    .loading-percent {
-      font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; letter-spacing: -0.04em;
-      background: linear-gradient(135deg, var(--accent), #57ffdc);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .loading-bar-wrap {
-      width: 200px; height: 5px; border-radius: 100px;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); overflow: hidden;
-    }
-    .loading-bar-fill {
-      height: 100%; width: 0%; border-radius: 100px;
-      background: linear-gradient(90deg, var(--accent), #57ffdc); transition: width 0.25s ease;
-    }
-    .loading-label {
-      font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
-      letter-spacing: 0.15em; text-transform: uppercase; color: rgba(240,240,240,0.38);
-    }
-    .loading-hint { font-size: 12px; color: rgba(240,240,240,0.18); text-align: center; padding: 0 20px; }
+/* ── HUD ── */
+#status-bar {
+  position: fixed; top: calc(var(--safe-top) + 12px);
+  left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(10,15,30,0.78); border: 1px solid var(--border);
+  border-radius: 40px; padding: 8px 18px; z-index: 500;
+  backdrop-filter: blur(14px); white-space: nowrap;
+  max-width: calc(100vw - 32px); pointer-events: none;
+  opacity: 0; transition: opacity 0.4s;
+}
+#status-bar.visible { opacity: 1; }
+#status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--teal); box-shadow: 0 0 8px var(--teal);
+  flex-shrink: 0; transition: background 0.3s;
+}
+#status-dot.warn { background: var(--gold);  box-shadow: 0 0 8px var(--gold); }
+#status-dot.err  { background: #ff4f6d;      box-shadow: 0 0 8px #ff4f6d; }
+#status-text { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
 
-    /* ═══ AR SCREEN ══════════════════════════════════════ */
-    #ar-screen { display: none; position: fixed; inset: 0; z-index: 100; }
-    #ar-screen.active { display: block; }
+#reticle-hint {
+  position: fixed; bottom: calc(var(--safe-bottom) + 110px);
+  left: 50%; transform: translateX(-50%);
+  background: rgba(10,15,30,0.78); border: 1px solid rgba(0,212,180,0.3);
+  color: var(--teal); padding: 8px 20px; border-radius: 40px;
+  font-family: var(--font-head); font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
+  z-index: 500; pointer-events: none; backdrop-filter: blur(12px);
+  opacity: 0; transition: opacity 0.4s;
+}
+#reticle-hint.visible { opacity: 1; }
 
-    model-viewer {
-      display: block; width: 100%; height: 100%;
-      --poster-color: #0a0a0f;
-      --progress-bar-color: transparent;
-      background-color: #111118;
-    }
-    model-viewer::part(default-ar-button)    { display: none !important; }
-    model-viewer::part(default-progress-bar) { display: none !important; }
+/* ── Bottom controls ── */
+#controls {
+  position: fixed; bottom: calc(var(--safe-bottom) + 24px);
+  left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  z-index: 500; opacity: 0; transition: opacity 0.4s;
+}
+#controls.visible { opacity: 1; }
 
-    /* ═══ SLOT AR BUTTON ══════════════════════════════════
-       Rendered by model-viewer at bottom-center of the viewer.
-       margin-bottom lifts it above our anim-row (~56px) + safe area.
-       All fixed overlays use pointer-events:none — nothing blocks
-       taps from reaching this button.
-    ══════════════════════════════════════════════════════ */
-    .slot-ar-btn {
-      background: var(--accent); color: #0a0a0f;
-      font-family: 'Syne', sans-serif; font-size: 15px;
-      font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-      padding: 17px 44px; border-radius: 100px; border: none;
-      cursor: pointer; white-space: nowrap;
-      display: inline-flex; align-items: center; gap: 10px;
-      box-shadow: 0 4px 30px rgba(184,255,87,0.55), 0 0 0 1px rgba(184,255,87,0.2);
-      transition: transform 0.15s;
-      margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
-    }
-    .slot-ar-btn:active { transform: scale(0.96); }
+.ctrl-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 11px 18px; border: none; border-radius: 40px; cursor: pointer;
+  font-family: var(--font-head); font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
+  transition: transform 0.15s; backdrop-filter: blur(12px);
+}
+.ctrl-btn:active { transform: scale(0.92); }
 
-    /* ═══ TOPBAR ══════════════════════════════════════════
-       pointer-events:none on wrapper — only children are tappable.
-    ══════════════════════════════════════════════════════ */
-    #ar-topbar {
-      display: none; position: fixed;
-      top: 0; left: 0; right: 0;
-      padding: calc(var(--safe-top) + 14px) 20px 20px;
-      z-index: 200;
-      background: linear-gradient(to bottom, rgba(10,10,15,0.88) 55%, transparent);
-      pointer-events: none;   /* ← transparent to touches */
-      align-items: center; justify-content: space-between;
-    }
-    #ar-topbar.active { display: flex; }
-    #ar-topbar > * { pointer-events: auto; }   /* ← children only */
+#place-btn {
+  background: linear-gradient(135deg, var(--teal), var(--teal2));
+  color: var(--ink); box-shadow: 0 6px 24px rgba(0,212,180,0.4);
+  padding: 14px 32px; font-size: 14px;
+}
+#anim-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85); box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  max-width: 130px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+#reset-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6); font-size: 18px; width: 44px; height: 44px;
+  justify-content: center; padding: 0;
+}
 
-    .ar-title {
-      display: flex; align-items: center; gap: 8px;
-      font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: 15px; color: var(--accent); letter-spacing: 0.06em;
-    }
-    .ar-dot { width:7px;height:7px;background:var(--accent);border-radius:50%;animation:dotPulse 2s ease-in-out infinite; }
-    #close-btn {
-      width: 42px; height: 42px; border-radius: 50%;
-      background: rgba(10,10,15,0.75); border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.8); font-size: 16px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(12px); transition: background 0.2s, border-color 0.2s;
-    }
-    #close-btn:active { background: rgba(255,60,60,0.3); }
+/* ── Loading ── */
+#loading {
+  position: fixed; inset: 0; z-index: 1500;
+  background: rgba(10,15,30,0.85); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 20px;
+}
+#loading.active { display: flex; }
+.loader-ring { width: 56px; height: 56px; position: relative; }
+.loader-ring::before, .loader-ring::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: 50%; border: 3px solid transparent;
+}
+.loader-ring::before { border-top-color: var(--teal);  animation: spin 0.9s linear infinite; }
+.loader-ring::after  { border-bottom-color: var(--gold); animation: spin 1.4s linear infinite reverse; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading-text { font-size: 14px; color: rgba(255,255,255,0.7); font-family: var(--font-body); }
 
-    /* ═══ ANIM ROW ════════════════════════════════════════
-       pointer-events:none on wrapper — only the pill is tappable.
-       Sits at the very bottom, above safe area.
-       AR button floats above it via margin-bottom.
-    ══════════════════════════════════════════════════════ */
-    #anim-row {
-      display: none; position: fixed;
-      bottom: calc(var(--safe-bottom) + 18px);
-      left: 0; right: 0;
-      justify-content: center;
-      z-index: 200;
-      pointer-events: none;   /* ← transparent to touches */
-    }
-    #anim-row.active { display: flex; }
-
-    .anim-pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(10,10,15,0.82); border: 1px solid var(--border);
-      border-radius: 100px; padding: 5px;
-      backdrop-filter: blur(14px);
-      pointer-events: auto;   /* ← pill captures taps */
-    }
-    #anim-label {
-      font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700;
-      letter-spacing: 0.08em; color: rgba(240,240,240,0.55);
-      padding: 0 10px; text-transform: uppercase; white-space: nowrap;
-    }
-    .anim-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(240,240,240,0.75); font-size: 18px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s, color 0.2s; flex-shrink: 0;
-    }
-    .anim-btn:active { background: rgba(184,255,87,0.2); color: var(--accent); transform: scale(0.92); }
-
-    /* Bottom fade — purely visual, never intercepts taps */
-    #bottom-fade {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 220px;
-      background: linear-gradient(to top, rgba(10,10,15,0.82) 25%, transparent);
-      z-index: 150; pointer-events: none;
-    }
-    #bottom-fade.active { display: block; }
-
-    /* ═══ NO-AR ═══════════════════════════════════════════ */
-    #no-ar-notice {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.88); z-index: 300;
-      align-items: center; justify-content: center;
-    }
-    #no-ar-notice.show { display: flex; }
-    .notice-box {
-      background: #1a1a24; border: 1px solid var(--border);
-      border-radius: 20px; padding: 40px 32px;
-      max-width: 320px; width: 88%; text-align: center;
-    }
-    .notice-box h2 { font-family:'Syne',sans-serif; font-size:1.3rem; margin-bottom:10px; }
-    .notice-box p  { font-size:13px; line-height:1.6; margin-bottom:24px; color:rgba(240,240,240,0.45); }
-    .notice-close {
-      background: var(--accent); color: #0a0a0f; border: none;
-      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
-      padding: 12px 28px; border-radius: 100px; cursor: pointer;
-    }
-
-    @media (max-height: 680px) { #splash-card { padding: 32px 24px; } .steps { margin-bottom: 20px; } }
-  </style>
+/* ── No-XR notice ── */
+#no-xr {
+  position: fixed; inset: 0; z-index: 3000;
+  display: none; align-items: center; justify-content: center;
+  background: var(--ink); text-align: center; padding: 32px;
+  flex-direction: column; gap: 16px;
+}
+#no-xr.active { display: flex; }
+#no-xr h2 { font-family: var(--font-head); color: #fff; font-size: 22px; }
+#no-xr p  { color: rgba(255,255,255,0.5); font-size: 14px; max-width: 300px; line-height: 1.6; }
+</style>
 </head>
 <body>
 
-<!-- ═══ SPLASH ════════════════════════════════════════════ -->
 <div id="splash">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
   <div id="splash-card">
-    <div class="badge">WebAR Experience</div>
-    <div class="splash-title">Make it<br><span>Dance. 💃</span></div>
-    <p class="splash-sub">Drop a dancing avatar into your real world.<br>No app needed — pure browser AR.</p>
+    <div class="splash-badge">✦ WebXR · Floor AR</div>
+    <div class="splash-title">Point.<br><span>Place. Watch.</span></div>
+    <p class="splash-sub">No markers · Drop your model on any floor</p>
     <div class="steps">
-      <div class="step"><span class="step-num">1</span><p>Tap <strong style="color:var(--accent)">Launch AR</strong> and allow camera access</p></div>
-      <div class="step"><span class="step-num">2</span><p>Wait for the avatar to finish loading</p></div>
-      <div class="step"><span class="step-num">3</span><p>Point at a flat floor or table, then tap <strong style="color:var(--accent)">Place in world</strong></p></div>
+      <div class="step"><span class="step-num">1</span><p>Tap <strong>Launch AR</strong> and allow camera access</p></div>
+      <div class="step"><span class="step-num">2</span><p>Slowly scan your floor until the <strong>teal ring</strong> appears</p></div>
+      <div class="step"><span class="step-num">3</span><p>Tap <strong>Place</strong> to anchor the model to the floor</p></div>
+      <div class="step"><span class="step-num">4</span><p>Tap <strong>Anim</strong> to cycle through all animations</p></div>
     </div>
-    <button id="launch-btn">🕺 Launch AR Dance</button>
-    <p class="launch-hint">Requires camera · Works on Android Chrome &amp; iOS Safari</p>
+    <button id="start-btn">Launch AR →</button>
   </div>
 </div>
 
-<!-- ═══ LOADING ═══════════════════════════════════════════ -->
-<div id="loading-overlay">
-  <div class="loading-avatar">🕺</div>
-  <div class="loading-percent" id="loading-percent">0%</div>
-  <div class="loading-bar-wrap"><div class="loading-bar-fill" id="loading-bar"></div></div>
-  <div class="loading-label">Loading Avatar</div>
-  <div class="loading-hint">Point at a flat floor or table,<br>then tap the green button below</div>
+<div id="loading">
+  <div class="loader-ring"></div>
+  <p id="loading-text">Loading model…</p>
 </div>
 
-<!-- ═══ AR SCREEN ═════════════════════════════════════════
-  model-viewer is the ONLY child. All UI is outside via position:fixed.
-══════════════════════════════════════════════════════════ -->
-<div id="ar-screen">
-  <model-viewer
-    id="mv"
-    src="model.glb"
-    alt="Dancing Avatar"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
-    ar-placement="floor"
-    ar-scale="fixed"
-    camera-controls
-    auto-rotate
-    auto-rotate-delay="0"
-    rotation-per-second="30deg"
-    shadow-intensity="1.5"
-    shadow-softness="1"
-    exposure="1"
-    environment-image="neutral"
-    autoplay
-    orientation="-90deg 0deg 0deg"
-    camera-orbit="0deg 70deg 2.5m"
-    min-camera-orbit="auto auto 1m"
-    max-camera-orbit="auto auto 6m"
-    field-of-view="30deg"
-    min-field-of-view="15deg"
-    max-field-of-view="45deg"
-  >
-    <!--
-      ✅ MUST stay inside <model-viewer>.
-         WebXR / Quick Look camera permission is gated on a direct
-         user tap on model-viewer via this slotted button.
-         margin-bottom pushes it above the anim-row pill.
-         Fixed overlays all use pointer-events:none — nothing
-         blocks taps from reaching this button.
-    -->
-    <button slot="ar-button" class="slot-ar-btn">
-      📷 Place in world
-    </button>
-  </model-viewer>
+<div id="no-xr">
+  <h2>WebXR Not Available</h2>
+  <p>Open in <strong>Chrome on Android</strong>, or enable WebXR in Safari 17+ on iOS. Make sure you're on <strong>HTTPS</strong>.</p>
 </div>
 
-<!-- ═══ FIXED OVERLAYS ════════════════════════════════════
-  Wrapper divs: pointer-events:none (taps pass through to model-viewer)
-  Interactive children: pointer-events:auto (only they capture taps)
-══════════════════════════════════════════════════════════ -->
-
-<!-- Purely decorative bottom gradient, never blocks taps -->
-<div id="bottom-fade"></div>
-
-<!-- Topbar: wrapper is none, close-btn and title are auto -->
-<div id="ar-topbar">
-  <div class="ar-title"><span class="ar-dot"></span> AR DANCE</div>
-  <button id="close-btn" aria-label="Close AR">✕</button>
+<div id="status-bar"><span id="status-dot"></span><span id="status-text">Ready</span></div>
+<div id="reticle-hint">🎯 Point at the floor to detect surface</div>
+<div id="controls">
+  <button class="ctrl-btn" id="reset-btn" title="Reset">↺</button>
+  <button class="ctrl-btn" id="place-btn">📍 Place</button>
+  <button class="ctrl-btn" id="anim-btn">▶ Anim</button>
 </div>
 
-<!-- Anim row: wrapper is none, pill is auto — shown only with >1 anim -->
-<div id="anim-row">
-  <div class="anim-pill">
-    <button class="anim-btn" id="prev-anim" aria-label="Previous animation">‹</button>
-    <span id="anim-label">Dance</span>
-    <button class="anim-btn" id="next-anim" aria-label="Next animation">›</button>
-  </div>
-</div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
+  }
+}
+</script>
 
-<!-- No-AR fallback -->
-<div id="no-ar-notice">
-  <div class="notice-box">
-    <h2>AR Not Supported</h2>
-    <p>Your browser doesn't support WebAR.<br>Try <strong>Chrome on Android</strong> or <strong>Safari on iOS 12+</strong>.</p>
-    <button class="notice-close" id="no-ar-close">Got it</button>
-  </div>
-</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader }  from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
-<script>
-  const splash     = document.getElementById('splash');
-  const launchBtn  = document.getElementById('launch-btn');
-  const loadingOv  = document.getElementById('loading-overlay');
-  const loadingPct = document.getElementById('loading-percent');
-  const loadingBar = document.getElementById('loading-bar');
-  const arScreen   = document.getElementById('ar-screen');
-  const mv         = document.getElementById('mv');
-  const arTopbar   = document.getElementById('ar-topbar');
-  const animRow    = document.getElementById('anim-row');
-  const animLabel  = document.getElementById('anim-label');
-  const bottomFade = document.getElementById('bottom-fade');
-  const closeBtn   = document.getElementById('close-btn');
-  const prevAnim   = document.getElementById('prev-anim');
-  const nextAnim   = document.getElementById('next-anim');
-  const noAr       = document.getElementById('no-ar-notice');
-  const noArClose  = document.getElementById('no-ar-close');
+// ─────────────────────────────────────────────────────────
+// ★ CONFIG — edit these two lines only
+const MODEL_URL   = 'model.glb';  // path or URL to your GLB
+const MODEL_SCALE = 0.25;         // 0.25 = ~75cm tall for a 3m model; raise/lower to taste
+// ─────────────────────────────────────────────────────────
 
-  let anims = [], currentAnim = 0, modelLoaded = false;
+const $ = id => document.getElementById(id);
+const splash      = $('splash');
+const loading     = $('loading');
+const loadingText = $('loading-text');
+const noXR        = $('no-xr');
+const statusBar   = $('status-bar');
+const statusDot   = $('status-dot');
+const statusTxt   = $('status-text');
+const reticleHint = $('reticle-hint');
+const controls    = $('controls');
+const placeBtn    = $('place-btn');
+const animBtn     = $('anim-btn');
+const resetBtn    = $('reset-btn');
+const startBtn    = $('start-btn');
 
-  /* ── Hide model-viewer's built-in UI chrome ─────────── */
-  function patchShadowDOM() {
-    try {
-      const root = mv.shadowRoot;
-      if (!root) return;
-      const s = document.createElement('style');
-      s.textContent = `
-        #default-ar-button, #fullscreen-button, #screenshot-button,
-        [part="default-ar-button"], [part="default-progress-bar"], .fab
-        { display: none !important; }
-      `;
-      root.appendChild(s);
-    } catch(e) {}
+let renderer, scene, camera, clock;
+let reticle, shadowFloor;
+let model, modelGroup, mixer;
+let animClips = [], animIdx = 0, currentAction;
+let placed = false;
+let hitTestSource = null, hitTestSourceRequested = false;
+let xrSession;
+
+function setStatus(type, text) {
+  statusDot.className = type === 'warn' ? 'warn' : type === 'err' ? 'err' : '';
+  statusTxt.textContent = text;
+}
+
+// ── THREE SCENE ───────────────────────────────────────────
+function buildScene() {
+  scene  = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 200);
+  clock  = new THREE.Clock();
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff, 1.6));
+
+  const dir = new THREE.DirectionalLight(0xffffff, 2.5);
+  dir.position.set(3, 5, 3);
+  dir.castShadow = true;
+  dir.shadow.mapSize.set(1024, 1024);
+  dir.shadow.camera.near = 0.1;
+  dir.shadow.camera.far  = 20;
+  scene.add(dir);
+
+  const fill = new THREE.DirectionalLight(0xaaccff, 0.9);
+  fill.position.set(-3, 2, -3);
+  scene.add(fill);
+
+  // Reticle ring (placement indicator)
+  const ring = new THREE.RingGeometry(0.09, 0.14, 64);
+  ring.rotateX(-Math.PI / 2);
+  reticle = new THREE.Mesh(ring, new THREE.MeshBasicMaterial({
+    color: 0x00d4b4, side: THREE.DoubleSide, transparent: true, opacity: 0.9
+  }));
+  reticle.matrixAutoUpdate = false;
+  reticle.visible = false;
+
+  // Gold dot at centre of reticle
+  const dot = new THREE.Mesh(
+    Object.assign(new THREE.CircleGeometry(0.035, 32), { needsUpdate: true }),
+    new THREE.MeshBasicMaterial({ color: 0xf5c842, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+  );
+  dot.geometry.rotateX(-Math.PI / 2);
+  reticle.add(dot);
+  scene.add(reticle);
+
+  // Shadow-receiver plane (shown after placement)
+  shadowFloor = new THREE.Mesh(
+    new THREE.PlaneGeometry(12, 12),
+    new THREE.ShadowMaterial({ opacity: 0.3 })
+  );
+  shadowFloor.rotation.x = -Math.PI / 2;
+  shadowFloor.receiveShadow = true;
+  shadowFloor.visible = false;
+  scene.add(shadowFloor);
+}
+
+// ── RENDERER ──────────────────────────────────────────────
+function buildRenderer() {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.xr.enabled = true;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+}
+
+// ── LOAD GLB ──────────────────────────────────────────────
+function loadGLB() {
+  return new Promise((resolve, reject) => {
+    const draco = new DRACOLoader();
+    draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    draco.preload();
+
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(draco);
+
+    loader.load(
+      MODEL_URL,
+      gltf => {
+        model = gltf.scene;
+
+        // ── Normalise size ───────────────────────────────
+        // Model is ~3 m³. We scale it so its largest dimension equals MODEL_SCALE metres.
+        const box    = new THREE.Box3().setFromObject(model);
+        const size   = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z); // ≈ 3
+        const s      = MODEL_SCALE / maxDim;              // e.g. 0.25/3 ≈ 0.083
+        model.scale.setScalar(s);
+        model.userData.finalScale = s;
+
+        // Shift so model base sits exactly on the floor (Y=0 of its group)
+        const box2   = new THREE.Box3().setFromObject(model);
+        const centre = box2.getCenter(new THREE.Vector3());
+        model.position.set(-centre.x, -box2.min.y, -centre.z);
+
+        // Shadows on every mesh
+        model.traverse(child => {
+          if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; }
+        });
+
+        // Animations
+        if (gltf.animations?.length) {
+          mixer     = new THREE.AnimationMixer(model);
+          animClips = gltf.animations;
+          console.log('Animations found:', animClips.map(a => a.name));
+          playAnim(0);
+        } else {
+          animBtn.style.opacity = '0.35';
+          animBtn.style.pointerEvents = 'none';
+          animBtn.textContent = 'No Anims';
+        }
+
+        model.visible = false;
+        scene.add(model);
+        resolve();
+      },
+      xhr => {
+        if (xhr.total) loadingText.textContent =
+          'Loading model… ' + Math.round(xhr.loaded / xhr.total * 100) + '%';
+      },
+      err => reject(err)
+    );
+  });
+}
+
+function playAnim(idx) {
+  if (!mixer || !animClips.length) return;
+  if (currentAction) currentAction.fadeOut(0.35);
+  animIdx = ((idx % animClips.length) + animClips.length) % animClips.length;
+  const clip = animClips[animIdx];
+  currentAction = mixer.clipAction(clip);
+  currentAction.reset().fadeIn(0.35).play();
+  const label = clip.name || `Anim ${animIdx + 1}`;
+  animBtn.textContent = '▶ ' + (label.length > 10 ? label.slice(0, 10) + '…' : label);
+}
+
+// ── XR SESSION ────────────────────────────────────────────
+async function startXR() {
+  buildRenderer();
+  buildScene();
+
+  loading.classList.add('active');
+  loadingText.textContent = 'Loading model…';
+
+  try {
+    await loadGLB();
+  } catch (e) {
+    console.error('Model load error:', e);
+    loadingText.textContent = '⚠ Could not load model.glb — check MODEL_URL';
+    setStatus('err', 'Model load failed');
+    return;
   }
 
-  /* ── Transitions ─────────────────────────────────────── */
-  function openAR() {
-    splash.style.display = 'none';
-    arScreen.classList.add('active');
-    arTopbar.classList.add('active');
-    bottomFade.classList.add('active');
-    if (!modelLoaded) loadingOv.classList.add('active');
+  loadingText.textContent = 'Starting AR session…';
+
+  try {
+    xrSession = await navigator.xr.requestSession('immersive-ar', {
+      requiredFeatures: ['hit-test'],
+      optionalFeatures: ['dom-overlay'],
+      domOverlay: { root: document.body },
+    });
+  } catch (e) {
+    loadingText.textContent = '⚠ AR session error: ' + e.message;
+    return;
   }
 
-  function closeAR() {
-    arScreen.classList.remove('active');
-    arTopbar.classList.remove('active');
-    animRow.classList.remove('active');
-    bottomFade.classList.remove('active');
-    loadingOv.classList.remove('active');
-    mv.pause();
+  renderer.xr.setReferenceSpaceType('local');
+  await renderer.xr.setSession(xrSession);
+
+  loading.classList.remove('active');
+  statusBar.classList.add('visible');
+  reticleHint.classList.add('visible');
+  controls.classList.add('visible');
+  setStatus('warn', 'Scan your floor slowly…');
+
+  xrSession.addEventListener('end', () => {
+    xrSession = null;
+    hitTestSource = null;
+    hitTestSourceRequested = false;
+    placed = false;
+    renderer.setAnimationLoop(null);
+    statusBar.classList.remove('visible');
+    reticleHint.classList.remove('visible');
+    controls.classList.remove('visible');
     splash.style.display = 'flex';
-  }
-
-  /* ── Loading ─────────────────────────────────────────── */
-  mv.addEventListener('progress', e => {
-    const pct = Math.round(e.detail.totalProgress * 100);
-    loadingBar.style.width = pct + '%';
-    loadingPct.textContent = pct + '%';
   });
 
-  mv.addEventListener('load', () => {
-    patchShadowDOM();
-    modelLoaded = true;
-    loadingBar.style.width = '100%';
-    loadingPct.textContent = '100%';
-    setTimeout(() => loadingOv.classList.remove('active'), 450);
+  renderer.setAnimationLoop(onFrame);
+}
 
-    anims = mv.availableAnimations || [];
-    if (anims.length > 0) {
-      mv.animationName = anims[0];
-      mv.play({ repetitions: Infinity });
-      animLabel.textContent = fmtName(anims[0]);
+// ── FRAME LOOP ────────────────────────────────────────────
+function onFrame(time, frame) {
+  if (!frame) return;
+
+  const delta = clock.getDelta();
+  if (mixer) mixer.update(delta);
+
+  const refSpace = renderer.xr.getReferenceSpace();
+  const session  = renderer.xr.getSession();
+
+  // Request hit-test source once
+  if (!hitTestSourceRequested) {
+    hitTestSourceRequested = true;
+    session.requestReferenceSpace('viewer').then(vs => {
+      session.requestHitTestSource({ space: vs }).then(src => {
+        hitTestSource = src;
+        setStatus('', 'Move phone over the floor');
+      }).catch(e => { console.warn('hit-test source:', e); setStatus('err', 'Hit-test unavailable'); });
+    });
+  }
+
+  // Reticle tracking (only while not yet placed)
+  if (hitTestSource && !placed) {
+    const hits = frame.getHitTestResults(hitTestSource);
+    if (hits.length) {
+      const pose = hits[0].getPose(refSpace);
+      reticle.visible = true;
+      reticle.matrix.fromArray(pose.transform.matrix);
+
+      // Subtle pulse
+      const p = 0.9 + 0.1 * Math.sin(time * 0.004);
+      reticle.scale.set(p, p, p);
+      reticle.material.opacity = 0.7 + 0.2 * Math.sin(time * 0.004);
+      setStatus('', 'Floor found — tap Place!');
+    } else {
+      reticle.visible = false;
+      setStatus('warn', 'Keep scanning the floor…');
     }
-    if (anims.length > 1) animRow.classList.add('active');
-  });
-
-  /* ── AR status ───────────────────────────────────────── */
-  mv.addEventListener('ar-status', e => {
-    if (e.detail.status === 'failed') noAr.classList.add('show');
-  });
-
-  /* ── Helpers ─────────────────────────────────────────── */
-  function fmtName(n) {
-    return (n||'').replace(/[_\-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase()).slice(0,18);
   }
 
-  /* ── Events ──────────────────────────────────────────── */
-  launchBtn.addEventListener('click', () => {
-    try { const AC=window.AudioContext||window.webkitAudioContext; if(AC) new AC().resume(); } catch(e){}
-    openAR();
-  });
+  renderer.render(scene, camera);
+}
 
-  closeBtn.addEventListener('click', closeAR);
-  noArClose.addEventListener('click', () => noAr.classList.remove('show'));
+// ── PLACE MODEL ───────────────────────────────────────────
+function placeModel() {
+  if (!reticle.visible || placed) return;
+  placed = true;
 
-  function setAnim(idx) {
-    currentAnim = (idx + anims.length) % anims.length;
-    mv.animationName = anims[currentAnim];
-    mv.play({ repetitions: Infinity });
-    animLabel.textContent = fmtName(anims[currentAnim]);
+  // Decompose reticle world matrix → position + rotation
+  const m    = new THREE.Matrix4().fromArray(reticle.matrix.elements);
+  const pos  = new THREE.Vector3();
+  const quat = new THREE.Quaternion();
+  const sc   = new THREE.Vector3();
+  m.decompose(pos, quat, sc);
+
+  // Group to hold model (lets us rotate/reposition easily)
+  modelGroup = new THREE.Group();
+  modelGroup.position.copy(pos);
+  modelGroup.quaternion.copy(quat);
+
+  scene.remove(model);
+  modelGroup.add(model);
+  scene.add(modelGroup);
+
+  // Position shadow plane at the same Y
+  shadowFloor.position.copy(pos);
+  shadowFloor.visible = true;
+
+  // Pop-in scale tween (0 → finalScale)
+  model.visible = true;
+  const finalS = model.userData.finalScale;
+  model.scale.setScalar(0);
+  let t = 0;
+  const tick = () => {
+    t = Math.min(t + 0.055, 1);
+    model.scale.setScalar((1 - Math.pow(1 - t, 3)) * finalS);
+    if (t < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+
+  reticle.visible = false;
+  reticleHint.classList.remove('visible');
+  placeBtn.textContent = '✓ Placed';
+  placeBtn.style.background = 'rgba(255,255,255,0.08)';
+  placeBtn.style.color = 'rgba(255,255,255,0.4)';
+  placeBtn.style.boxShadow = 'none';
+  setStatus('', '🎉 Model placed!');
+}
+
+// ── RESET ─────────────────────────────────────────────────
+function resetPlacement() {
+  if (modelGroup) {
+    modelGroup.remove(model);
+    scene.remove(modelGroup);
+    modelGroup = null;
+    model.visible = false;
+    scene.add(model);
   }
-  prevAnim.addEventListener('click', () => setAnim(currentAnim - 1));
-  nextAnim.addEventListener('click', () => setAnim(currentAnim + 1));
+  shadowFloor.visible = false;
+  placed = false;
+  hitTestSourceRequested = false;
+  hitTestSource = null;
+  reticle.visible = false;
+
+  placeBtn.textContent = '📍 Place';
+  placeBtn.style.cssText = '';
+  reticleHint.classList.add('visible');
+  setStatus('warn', 'Scan your floor again…');
+}
+
+// ── BUTTONS ───────────────────────────────────────────────
+placeBtn.addEventListener('click', placeModel);
+animBtn.addEventListener('click',  () => playAnim(animIdx + 1));
+resetBtn.addEventListener('click', resetPlacement);
+
+startBtn.addEventListener('click', async () => {
+  if (!navigator.xr) { noXR.classList.add('active'); return; }
+  let ok = false;
+  try { ok = await navigator.xr.isSessionSupported('immersive-ar'); } catch (_) {}
+  if (!ok) { noXR.classList.add('active'); return; }
+  splash.style.display = 'none';
+  startXR();
+});
 </script>
 </body>
 </html>
