@@ -350,6 +350,82 @@
       margin-bottom: 28px;
       color: rgba(240,240,240,0.5);
     }
+
+    /* Loading screen */
+    .loading-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 150;
+      background: #0a0a0f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loading-avatar {
+      font-size: 56px;
+      animation: avatarBob 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes avatarBob {
+      from { transform: translateY(0) rotate(-5deg); }
+      to   { transform: translateY(-12px) rotate(5deg); }
+    }
+
+    .loading-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(240,240,240,0.5);
+    }
+
+    .loading-bar-wrap {
+      width: 220px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 100px;
+      height: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .loading-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #57ffdc);
+      border-radius: 100px;
+      transition: width 0.2s ease;
+      box-shadow: 0 0 12px rgba(184,255,87,0.6);
+    }
+
+    .loading-percent {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--accent), #57ffdc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .loading-tip {
+      font-size: 12px;
+      color: rgba(240,240,240,0.2);
+      letter-spacing: 0.04em;
+    }
   </style>
 </head>
 <body>
@@ -377,6 +453,17 @@
     <div class="ar-topbar">
       <div class="ar-title">🕺 AR DANCE</div>
       <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loadingScreen">
+      <div class="loading-avatar">🕺</div>
+      <div class="loading-percent" id="loadingPercent">0%</div>
+      <div class="loading-bar-wrap">
+        <div class="loading-bar-fill" id="loadingBar"></div>
+      </div>
+      <div class="loading-label">Loading Avatar</div>
+      <div class="loading-tip">Point at a flat surface once loaded</div>
     </div>
 
     <model-viewer
@@ -422,11 +509,30 @@
     const nextAnim   = document.getElementById('nextAnim');
     const noArNotice = document.getElementById('no-ar-notice');
 
+    const loadingScreen  = document.getElementById('loadingScreen');
+    const loadingBar     = document.getElementById('loadingBar');
+    const loadingPercent = document.getElementById('loadingPercent');
+
     let animations  = [];
     let currentAnim = 0;
 
-    // Once model loads, grab animation list
+    // Track loading progress
+    modelViewer.addEventListener('progress', (e) => {
+      const pct = Math.round(e.detail.totalProgress * 100);
+      loadingBar.style.width = pct + '%';
+      loadingPercent.textContent = pct + '%';
+    });
+
+    // Once model loads, grab animation list and hide loader
     modelViewer.addEventListener('load', () => {
+      // Ensure bar hits 100% visually
+      loadingBar.style.width = '100%';
+      loadingPercent.textContent = '100%';
+
+      setTimeout(() => {
+        loadingScreen.classList.add('hidden');
+      }, 400);
+
       animations = modelViewer.availableAnimations || [];
       console.log('Animations found:', animations);
 
@@ -445,6 +551,12 @@
     danceBtn.addEventListener('click', () => {
       danceBtn.classList.add('dancing');
       setTimeout(() => danceBtn.classList.remove('dancing'), 600);
+
+      // Reset loader if model not yet loaded
+      if (!loadingScreen.classList.contains('hidden')) {
+        loadingBar.style.width = '0%';
+        loadingPercent.textContent = '0%';
+      }
 
       arOverlay.classList.add('active');
 
