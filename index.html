@@ -12,10 +12,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink:    #0a0f1e;
-  --gold:   #f5c842;
-  --teal:   #00d4b4;
-  --teal2:  #00a88e;
+  --ink:   #0a0f1e;
+  --gold:  #f5c842;
+  --teal:  #00d4b4;
+  --teal2: #00a88e;
+  --red:   #ff4f6d;
   --border: rgba(255,255,255,0.10);
   --font-head: 'Syne', sans-serif;
   --font-body: 'DM Sans', sans-serif;
@@ -30,7 +31,7 @@ html, body {
 }
 canvas { display: block; }
 
-/* ── Splash ── */
+/* ─── SPLASH ─────────────────────────────────────────────── */
 #splash {
   position: fixed; inset: 0; z-index: 2000;
   display: flex; align-items: center; justify-content: center;
@@ -40,7 +41,7 @@ canvas { display: block; }
     radial-gradient(ellipse 50% 60% at 80% 80%,  rgba(245,200,66,0.08) 0%, transparent 60%);
 }
 #splash::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
+  content:''; position:absolute; inset:0; pointer-events:none;
   background-image:
     repeating-linear-gradient(0deg,  transparent, transparent 39px, rgba(255,255,255,0.025) 40px),
     repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.025) 40px);
@@ -54,242 +55,256 @@ canvas { display: block; }
   animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
 }
 @keyframes cardIn {
-  from { opacity:0; transform: translateY(32px) scale(0.97); }
-  to   { opacity:1; transform: translateY(0) scale(1); }
+  from { opacity:0; transform:translateY(32px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0)    scale(1); }
 }
-.splash-badge {
+.badge {
   display: inline-flex; align-items: center; gap: 6px;
-  background: linear-gradient(135deg, rgba(0,212,180,0.15), rgba(0,212,180,0.05));
+  background: linear-gradient(135deg,rgba(0,212,180,0.15),rgba(0,212,180,0.05));
   border: 1px solid rgba(0,212,180,0.3); border-radius: 40px;
   padding: 4px 12px; font-size: 10px; font-weight: 700; letter-spacing: 1px;
   color: var(--teal); font-family: var(--font-head); margin-bottom: 16px; text-transform: uppercase;
 }
-.splash-title {
-  font-family: var(--font-head); font-size: clamp(28px,8vw,36px);
-  font-weight: 800; color: #fff; line-height: 1.15; letter-spacing: -1px; margin-bottom: 6px;
+.title {
+  font-family: var(--font-head); font-size: clamp(26px,7vw,34px);
+  font-weight: 800; color:#fff; line-height:1.15; letter-spacing:-1px; margin-bottom:6px;
 }
-.splash-title span {
+.title span {
   background: linear-gradient(135deg, var(--gold), var(--teal));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
 }
-.splash-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 24px; line-height: 1.5; }
+.sub { font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:22px; line-height:1.5; }
 
-#platform-badge {
-  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px; margin-bottom: 20px;
+#plat-badge {
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; margin-bottom:20px;
 }
-#platform-icon { font-size: 22px; }
-#platform-text { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4; }
-#platform-text strong { color: var(--teal); display: block; font-size: 12px; margin-bottom: 1px; }
+#plat-icon { font-size:22px; }
+#plat-label { font-size:12px; font-weight:600; color:var(--teal); display:block; margin-bottom:2px; font-family:var(--font-head); }
+#plat-desc  { font-size:11px; color:rgba(255,255,255,0.45); }
 
-.steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+.steps { display:flex; flex-direction:column; gap:8px; margin-bottom:26px; }
 .step {
-  display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px;
+  display:flex; align-items:flex-start; gap:12px; padding:10px 14px;
+  background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px;
 }
-.step-num {
-  min-width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 800; font-family: var(--font-head);
-  background: linear-gradient(135deg, var(--teal), #00b4a0); color: var(--ink);
+.step-n {
+  min-width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:800; font-family:var(--font-head);
+  background:linear-gradient(135deg,var(--teal),#00b4a0); color:var(--ink);
 }
-.step p { font-size: 12px; color: rgba(255,255,255,0.65); line-height: 1.5; }
-.step p strong { color: var(--teal); }
+.step p { font-size:12px; color:rgba(255,255,255,0.65); line-height:1.5; }
+.step p b { color:var(--teal); font-weight:600; }
 
-#start-btn {
-  width: 100%; padding: 15px 20px; border: none; border-radius: 40px;
-  font-family: var(--font-head); font-size: 15px; font-weight: 700; letter-spacing: 0.5px;
-  cursor: pointer; background: linear-gradient(135deg, var(--teal), #e6a800); color: var(--ink);
-  box-shadow: 0 8px 32px rgba(0,212,180,0.35); transition: transform 0.15s, opacity 0.2s;
-}
-#start-btn:active { transform: scale(0.97); }
-
-/* ── iOS AR Quick Look trigger (invisible) ── */
-#ios-ar-anchor {
-  position: fixed; top: -9999px; left: -9999px;
-  display: block; width: 1px; height: 1px;
-}
-#ios-ar-anchor img { width: 1px; height: 1px; opacity: 0; }
-
-/* ── Status bar ── */
-#status-bar {
-  position: fixed; top: calc(var(--safe-top) + 12px);
-  left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 8px;
-  background: rgba(10,15,30,0.78); border: 1px solid var(--border);
-  border-radius: 40px; padding: 8px 18px; z-index: 500;
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  white-space: nowrap; max-width: calc(100vw - 32px);
-  pointer-events: none; opacity: 0; transition: opacity 0.4s;
-}
-#status-bar.visible { opacity: 1; }
-#status-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--teal); box-shadow: 0 0 8px var(--teal);
-  flex-shrink: 0; transition: background 0.3s;
-}
-#status-dot.warn { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
-#status-dot.err  { background: #ff4f6d;     box-shadow: 0 0 8px #ff4f6d; }
-#status-text { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
-
-/* ── Reticle hint ── */
-#reticle-hint {
-  position: fixed; bottom: calc(var(--safe-bottom) + 110px);
-  left: 50%; transform: translateX(-50%);
-  background: rgba(10,15,30,0.78); border: 1px solid rgba(0,212,180,0.3);
-  color: var(--teal); padding: 8px 20px; border-radius: 40px;
-  font-family: var(--font-head); font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
-  z-index: 500; pointer-events: none; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  opacity: 0; transition: opacity 0.4s;
-}
-#reticle-hint.visible { opacity: 1; }
-
-/* ── Bottom controls ── */
-#controls {
-  position: fixed; bottom: calc(var(--safe-bottom) + 24px);
-  left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 10px;
-  z-index: 500; opacity: 0; transition: opacity 0.4s;
-}
-#controls.visible { opacity: 1; }
-.ctrl-btn {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 11px 18px; border: none; border-radius: 40px; cursor: pointer;
-  font-family: var(--font-head); font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
-  transition: transform 0.15s; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+/*
+  iOS AR BUTTON — the <a rel="ar"> MUST be the element the user
+  directly taps. We style it to look like a normal button.
+  No JS async in between — Safari requires a synchronous gesture.
+*/
+#ios-ar-link {
+  display: none; /* shown only on iOS */
+  width: 100%; padding: 15px 20px; border-radius: 40px;
+  font-family: var(--font-head); font-size: 15px; font-weight: 700;
+  letter-spacing: 0.5px; text-align: center; text-decoration: none;
+  background: linear-gradient(135deg, var(--teal), #e6a800); color: var(--ink);
+  box-shadow: 0 8px 32px rgba(0,212,180,0.35);
+  transition: transform 0.15s, opacity 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
-.ctrl-btn:active { transform: scale(0.92); }
+#ios-ar-link:active { transform: scale(0.97); opacity: 0.9; }
+/* model-viewer fallback img inside the link — 1px invisible */
+#ios-ar-link img { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+
+#android-ar-btn {
+  display: none; /* shown only on Android/other */
+  width: 100%; padding: 15px 20px; border: none; border-radius: 40px;
+  font-family: var(--font-head); font-size: 15px; font-weight: 700;
+  letter-spacing: 0.5px; cursor: pointer;
+  background: linear-gradient(135deg, var(--teal), #e6a800); color: var(--ink);
+  box-shadow: 0 8px 32px rgba(0,212,180,0.35);
+  transition: transform 0.15s, opacity 0.2s;
+}
+#android-ar-btn:active { transform: scale(0.97); }
+
+/* ─── STATUS BAR ─────────────────────────────────────────── */
+#status-bar {
+  position:fixed; top:calc(var(--safe-top) + 12px);
+  left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:8px;
+  background:rgba(10,15,30,0.82); border:1px solid var(--border);
+  border-radius:40px; padding:8px 18px; z-index:500;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  white-space:nowrap; max-width:calc(100vw - 32px);
+  pointer-events:none; opacity:0; transition:opacity 0.4s;
+}
+#status-bar.show { opacity:1; }
+#sdot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+  background:var(--teal); box-shadow:0 0 8px var(--teal); transition:background 0.3s;
+}
+#sdot.warn { background:var(--gold); box-shadow:0 0 8px var(--gold); }
+#sdot.err  { background:var(--red);  box-shadow:0 0 8px var(--red);  }
+#stxt { font-size:12px; font-weight:500; color:rgba(255,255,255,0.85); }
+
+/* ─── RETICLE HINT ───────────────────────────────────────── */
+#rhint {
+  position:fixed; bottom:calc(var(--safe-bottom) + 110px);
+  left:50%; transform:translateX(-50%);
+  background:rgba(10,15,30,0.82); border:1px solid rgba(0,212,180,0.3);
+  color:var(--teal); padding:8px 20px; border-radius:40px;
+  font-family:var(--font-head); font-size:12px; font-weight:700; letter-spacing:0.4px;
+  z-index:500; pointer-events:none;
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  opacity:0; transition:opacity 0.4s;
+}
+#rhint.show { opacity:1; }
+
+/* ─── BOTTOM CONTROLS (Android only) ────────────────────── */
+#controls {
+  position:fixed; bottom:calc(var(--safe-bottom) + 24px);
+  left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:10px;
+  z-index:500; opacity:0; transition:opacity 0.4s;
+}
+#controls.show { opacity:1; }
+.cb {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  padding:11px 18px; border:none; border-radius:40px; cursor:pointer;
+  font-family:var(--font-head); font-size:13px; font-weight:700; letter-spacing:0.3px;
+  transition:transform 0.15s; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  -webkit-tap-highlight-color:transparent;
+}
+.cb:active { transform:scale(0.92); }
 #place-btn {
-  background: linear-gradient(135deg, var(--teal), var(--teal2));
-  color: var(--ink); box-shadow: 0 6px 24px rgba(0,212,180,0.4);
-  padding: 14px 28px; font-size: 14px;
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  color:var(--ink); box-shadow:0 6px 24px rgba(0,212,180,0.4);
+  padding:14px 28px; font-size:14px;
 }
 #anim-btn {
-  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.85); max-width: 130px;
-  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.15);
+  color:rgba(255,255,255,0.85); max-width:130px;
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
 }
 #reset-btn {
-  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.6); width: 44px; height: 44px; padding: 0; border-radius: 50%;
-  font-size: 18px;
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.6); width:44px; height:44px; padding:0;
+  border-radius:50%; font-size:18px;
 }
 
-/* ── Loading ── */
+/* ─── LOADING ────────────────────────────────────────────── */
 #loading {
-  position: fixed; inset: 0; z-index: 1500;
-  background: rgba(10,15,30,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  display: none; align-items: center; justify-content: center; flex-direction: column; gap: 20px;
+  position:fixed; inset:0; z-index:1500;
+  background:rgba(10,15,30,0.9); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  display:none; align-items:center; justify-content:center;
+  flex-direction:column; gap:20px;
 }
-#loading.active { display: flex; }
-.loader-ring { width: 56px; height: 56px; position: relative; }
-.loader-ring::before, .loader-ring::after {
-  content: ''; position: absolute; inset: 0;
-  border-radius: 50%; border: 3px solid transparent;
+#loading.show { display:flex; }
+.ring { width:56px; height:56px; position:relative; }
+.ring::before, .ring::after {
+  content:''; position:absolute; inset:0;
+  border-radius:50%; border:3px solid transparent;
 }
-.loader-ring::before { border-top-color: var(--teal);  animation: spin 0.9s linear infinite; }
-.loader-ring::after  { border-bottom-color: var(--gold); animation: spin 1.4s linear infinite reverse; }
-@keyframes spin { to { transform: rotate(360deg); } }
-#loading-text { font-size: 14px; color: rgba(255,255,255,0.7); text-align: center; max-width: 260px; line-height: 1.6; }
+.ring::before { border-top-color:var(--teal);  animation:spin .9s linear infinite; }
+.ring::after  { border-bottom-color:var(--gold); animation:spin 1.4s linear infinite reverse; }
+@keyframes spin { to { transform:rotate(360deg); } }
+#ltxt {
+  font-size:14px; color:rgba(255,255,255,0.75);
+  text-align:center; max-width:280px; line-height:1.6;
+}
 
-/* ── iOS tip toast ── */
-#ios-tip {
-  position: fixed; top: calc(var(--safe-top) + 60px);
-  left: 50%; transform: translateX(-50%);
-  background: rgba(10,15,30,0.9); border: 1px solid rgba(245,200,66,0.4);
-  color: rgba(255,255,255,0.9); padding: 10px 20px; border-radius: 20px;
-  font-size: 12px; font-weight: 500; white-space: nowrap;
-  z-index: 600; pointer-events: none;
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  opacity: 0; transition: opacity 0.4s;
+/* ─── ERROR SCREEN ───────────────────────────────────────── */
+#err-screen {
+  position:fixed; inset:0; z-index:1600;
+  display:none; align-items:center; justify-content:center;
+  background:rgba(10,15,30,0.95); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  flex-direction:column; gap:18px; padding:32px; text-align:center;
 }
-#ios-tip.visible { opacity: 1; }
-
-/* ── No AR notice ── */
-#no-ar {
-  position: fixed; inset: 0; z-index: 3000;
-  display: none; align-items: center; justify-content: center;
-  background: var(--ink); text-align: center; padding: 32px; flex-direction: column; gap: 16px;
+#err-screen.show { display:flex; }
+#err-icon { font-size:48px; }
+#err-title { font-family:var(--font-head); color:#fff; font-size:20px; font-weight:800; }
+#err-msg   { color:rgba(255,255,255,0.5); font-size:13px; max-width:300px; line-height:1.7; }
+#err-retry {
+  padding:12px 32px; background:linear-gradient(135deg,var(--teal),var(--teal2));
+  border:none; border-radius:40px; font-family:var(--font-head); font-size:14px;
+  font-weight:700; color:var(--ink); cursor:pointer;
 }
-#no-ar.active { display: flex; }
-#no-ar h2 { font-family: var(--font-head); color: #fff; font-size: 22px; }
-#no-ar p  { color: rgba(255,255,255,0.5); font-size: 14px; max-width: 300px; line-height: 1.6; }
 </style>
 </head>
 <body>
 
-<!-- ── Splash ── -->
+<!-- ─── SPLASH ──────────────────────────────────────────────── -->
 <div id="splash">
   <div id="splash-card">
-    <div class="splash-badge">✦ AR · iOS &amp; Android</div>
-    <div class="splash-title">Point.<br><span>Place. Watch.</span></div>
-    <p class="splash-sub">No markers · Drops your model onto any real floor</p>
+    <div class="badge">✦ AR · iOS &amp; Android</div>
+    <div class="title">Point.<br><span>Place. Watch.</span></div>
+    <p class="sub">No markers · Real floor detection · Animations included</p>
 
-    <div id="platform-badge">
-      <span id="platform-icon">📱</span>
-      <div id="platform-text">
-        <strong id="platform-name">Detecting…</strong>
-        <span id="platform-desc">Checking AR support</span>
+    <div id="plat-badge">
+      <span id="plat-icon">📱</span>
+      <div>
+        <span id="plat-label">Detecting…</span>
+        <span id="plat-desc">Checking AR support</span>
       </div>
     </div>
 
+    <!-- Android steps -->
     <div class="steps" id="steps-android">
-      <div class="step"><span class="step-num">1</span><p>Tap <strong>Launch AR</strong> and allow camera access</p></div>
-      <div class="step"><span class="step-num">2</span><p>Slowly scan your floor until the teal ring appears</p></div>
-      <div class="step"><span class="step-num">3</span><p>Tap <strong>Place</strong> to anchor the model</p></div>
-      <div class="step"><span class="step-num">4</span><p>Tap <strong>Anim</strong> to cycle through all animations</p></div>
-    </div>
-    <div class="steps" id="steps-ios" style="display:none">
-      <div class="step"><span class="step-num">1</span><p>Tap <strong>Launch AR</strong> — opens Apple AR Quick Look</p></div>
-      <div class="step"><span class="step-num">2</span><p>Move your phone over the floor to detect the surface</p></div>
-      <div class="step"><span class="step-num">3</span><p>Tap the floor to <strong>place the model</strong></p></div>
-      <div class="step"><span class="step-num">4</span><p>Pinch to resize · drag to move · animations auto-play</p></div>
+      <div class="step"><span class="step-n">1</span><p>Tap <b>Launch AR</b> and allow camera</p></div>
+      <div class="step"><span class="step-n">2</span><p>Slowly scan the floor until the teal ring appears</p></div>
+      <div class="step"><span class="step-n">3</span><p>Tap <b>Place</b> to anchor the model</p></div>
+      <div class="step"><span class="step-n">4</span><p>Tap <b>Anim</b> to cycle through animations</p></div>
     </div>
 
-    <button id="start-btn">Launch AR →</button>
+    <!-- iOS steps -->
+    <div class="steps" id="steps-ios" style="display:none">
+      <div class="step"><span class="step-n">1</span><p>Tap <b>Launch AR</b> → opens Apple AR Quick Look</p></div>
+      <div class="step"><span class="step-n">2</span><p>Slowly move your phone over the floor</p></div>
+      <div class="step"><span class="step-n">3</span><p>Tap the floor to <b>place the model</b></p></div>
+      <div class="step"><span class="step-n">4</span><p>Pinch to resize · drag to reposition</p></div>
+    </div>
+
+    <!--
+      iOS BUTTON: This IS the <a rel="ar"> tag — Safari opens AR Quick Look
+      directly when the user taps it. No JS async in the middle.
+      The hidden <img> is required by Safari's AR Quick Look spec.
+    -->
+    <a id="ios-ar-link" rel="ar" href="model.glb">
+      <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+      📷 Launch AR
+    </a>
+
+    <!-- Android button — triggers Three.js WebXR -->
+    <button id="android-ar-btn">📷 Launch AR</button>
   </div>
 </div>
 
-<!--
-  iOS AR Quick Look trigger.
-  Safari requires an <a rel="ar"> wrapping an <img> to activate Quick Look.
-  We keep it invisible and click it programmatically on iOS.
--->
-<a id="ios-ar-anchor" rel="ar" href="model.glb">
-  <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-</a>
-
-<!-- ── Loading ── -->
+<!-- ─── LOADING ─────────────────────────────────────────────── -->
 <div id="loading">
-  <div class="loader-ring"></div>
-  <p id="loading-text">Loading model…</p>
+  <div class="ring"></div>
+  <p id="ltxt">Loading model…</p>
 </div>
 
-<!-- ── No AR ── -->
-<div id="no-ar">
-  <h2>AR Not Available</h2>
-  <p>
-    <strong style="color:var(--teal)">iPhone/iPad:</strong> Open in Safari (iOS 13+)<br><br>
-    <strong style="color:var(--teal)">Android:</strong> Open in Chrome with ARCore installed
-  </p>
+<!-- ─── ERROR SCREEN ────────────────────────────────────────── -->
+<div id="err-screen">
+  <span id="err-icon">⚠️</span>
+  <p id="err-title">Something went wrong</p>
+  <p id="err-msg">Unknown error</p>
+  <button id="err-retry" onclick="location.reload()">Try Again</button>
 </div>
 
-<!-- ── HUD ── -->
-<div id="status-bar"><span id="status-dot"></span><span id="status-text">Ready</span></div>
-<div id="reticle-hint">🎯 Point at the floor to detect surface</div>
-<div id="ios-tip">💡 Tap the floor in Quick Look to place</div>
+<!-- ─── HUD ─────────────────────────────────────────────────── -->
+<div id="status-bar"><span id="sdot"></span><span id="stxt">Ready</span></div>
+<div id="rhint">🎯 Point at the floor to detect surface</div>
 
-<!-- ── Controls (Android WebXR only) ── -->
+<!-- ─── CONTROLS (Android WebXR) ─────────────────────────────── -->
 <div id="controls">
-  <button class="ctrl-btn" id="reset-btn">↺</button>
-  <button class="ctrl-btn" id="place-btn">📍 Place</button>
-  <button class="ctrl-btn" id="anim-btn">▶ Anim</button>
+  <button class="cb" id="reset-btn">↺</button>
+  <button class="cb" id="place-btn">📍 Place</button>
+  <button class="cb" id="anim-btn">▶ Anim</button>
 </div>
 
-<!-- Three.js via importmap — same setup that was already working with Draco -->
 <script type="importmap">
 {
   "imports": {
@@ -304,79 +319,70 @@ import * as THREE from 'three';
 import { GLTFLoader }  from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
-// ─────────────────────────────────────────────────────────
-// ★ CONFIG
+// ─── CONFIG ──────────────────────────────────────────────────
 const MODEL_URL   = 'model.glb';
 const MODEL_SCALE = 0.25; // largest dimension in metres (0.25 = ~75 cm)
-// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 
+// ─── PLATFORM DETECTION ──────────────────────────────────────
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const isAndroid = /android/i.test(navigator.userAgent);
 
-// ── DOM refs ──────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-const splash       = $('splash');
-const loading      = $('loading');
-const loadingText  = $('loading-text');
-const noAR         = $('no-ar');
-const statusBar    = $('status-bar');
-const statusDot    = $('status-dot');
-const statusTxt    = $('status-text');
-const reticleHint  = $('reticle-hint');
-const iosTip       = $('ios-tip');
-const controls     = $('controls');
-const placeBtn     = $('place-btn');
-const animBtn      = $('anim-btn');
-const resetBtn     = $('reset-btn');
-const startBtn     = $('start-btn');
-const iosAnchor    = $('ios-ar-anchor');
+// ─── DOM ─────────────────────────────────────────────────────
+const splash      = document.getElementById('splash');
+const loading     = document.getElementById('loading');
+const ltxt        = document.getElementById('ltxt');
+const errScreen   = document.getElementById('err-screen');
+const errMsg      = document.getElementById('err-msg');
+const statusBar   = document.getElementById('status-bar');
+const sdot        = document.getElementById('sdot');
+const stxt        = document.getElementById('stxt');
+const rhint       = document.getElementById('rhint');
+const controls    = document.getElementById('controls');
+const placeBtn    = document.getElementById('place-btn');
+const animBtn     = document.getElementById('anim-btn');
+const resetBtn    = document.getElementById('reset-btn');
+const iosLink     = document.getElementById('ios-ar-link');
+const androidBtn  = document.getElementById('android-ar-btn');
 
-// ── Platform badge ─────────────────────────────────────────
+// ─── PLATFORM BADGE + BUTTON VISIBILITY ──────────────────────
 if (isIOS) {
-  $('platform-icon').textContent = '🍎';
-  $('platform-name').textContent = 'iPhone / iPad';
-  $('platform-desc').textContent = 'AR Quick Look · Safari native';
-  $('steps-android').style.display = 'none';
-  $('steps-ios').style.display     = 'flex';
-} else if (isAndroid) {
-  $('platform-icon').textContent = '🤖';
-  $('platform-name').textContent = 'Android';
-  $('platform-desc').textContent = 'WebXR · ARCore floor detection';
+  document.getElementById('plat-icon').textContent  = '🍎';
+  document.getElementById('plat-label').textContent = 'iPhone / iPad';
+  document.getElementById('plat-desc').textContent  = 'AR Quick Look · No app needed';
+  document.getElementById('steps-android').style.display = 'none';
+  document.getElementById('steps-ios').style.display     = 'flex';
+  iosLink.style.display    = 'block';     // show iOS <a rel="ar"> button
+  androidBtn.style.display = 'none';
 } else {
-  $('platform-icon').textContent = '💻';
-  $('platform-name').textContent = 'Desktop';
-  $('platform-desc').textContent = 'Use a phone for AR';
+  document.getElementById('plat-icon').textContent  = '🤖';
+  document.getElementById('plat-label').textContent = 'Android';
+  document.getElementById('plat-desc').textContent  = 'WebXR · ARCore floor detection';
+  iosLink.style.display    = 'none';
+  androidBtn.style.display = 'block';     // show Android <button>
 }
 
+// ─── HELPERS ─────────────────────────────────────────────────
 function setStatus(type, text) {
-  statusDot.className = type === 'warn' ? 'warn' : type === 'err' ? 'err' : '';
-  statusTxt.textContent = text;
+  sdot.className = type;
+  stxt.textContent = text;
+}
+function showErr(title, msg) {
+  loading.classList.remove('show');
+  document.getElementById('err-title').textContent = title;
+  errMsg.textContent = msg;
+  errScreen.classList.add('show');
 }
 
-// ══════════════════════════════════════════════════════════
-//  iOS PATH — AR Quick Look (Safari native, Draco support
-//  is handled by WebKit itself — no decoder needed)
-// ══════════════════════════════════════════════════════════
-function launchIOSQuickLook() {
-  // Clicking the <a rel="ar"> triggers Safari's native AR Quick Look.
-  // WebKit's parser handles Draco-compressed GLBs natively — no JS decoder.
-  iosAnchor.click();
-  iosTip.classList.add('visible');
-  setTimeout(() => iosTip.classList.remove('visible'), 6000);
-}
-
-// ══════════════════════════════════════════════════════════
-//  ANDROID PATH — Three.js + DRACOLoader + WebXR
-//  (exactly the approach that was already working)
-// ══════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────────
+//  ANDROID — Three.js + DRACOLoader + WebXR
+// ─────────────────────────────────────────────────────────────
 let renderer, scene, camera, clock;
 let reticle, shadowFloor;
 let model, modelGroup, mixer;
 let animClips = [], animIdx = 0, currentAction;
 let placed = false;
 let hitTestSource = null, hitTestSourceRequested = false;
-let xrSession;
 
 function buildRenderer() {
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -399,29 +405,35 @@ function buildScene() {
   clock  = new THREE.Clock();
 
   scene.add(new THREE.AmbientLight(0xffffff, 1.6));
+
   const dir = new THREE.DirectionalLight(0xffffff, 2.5);
-  dir.position.set(3, 5, 3); dir.castShadow = true;
+  dir.position.set(3, 5, 3);
+  dir.castShadow = true;
   dir.shadow.mapSize.set(1024, 1024);
   scene.add(dir);
-  scene.add(Object.assign(new THREE.DirectionalLight(0xaaccff, 0.9), { position: new THREE.Vector3(-3,2,-3) }));
 
-  // Reticle
-  const ring = new THREE.RingGeometry(0.09, 0.14, 64);
-  ring.rotateX(-Math.PI / 2);
-  reticle = new THREE.Mesh(ring, new THREE.MeshBasicMaterial({
+  const fill = new THREE.DirectionalLight(0xaaccff, 0.9);
+  fill.position.set(-3, 2, -3);
+  scene.add(fill);
+
+  // Reticle ring
+  const geo = new THREE.RingGeometry(0.09, 0.14, 64);
+  geo.rotateX(-Math.PI / 2);
+  reticle = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
     color: 0x00d4b4, side: THREE.DoubleSide, transparent: true, opacity: 0.9
   }));
   reticle.matrixAutoUpdate = false;
   reticle.visible = false;
+
   const dot = new THREE.Mesh(
-    Object.assign(new THREE.CircleGeometry(0.035, 32), {}),
+    Object.assign(new THREE.CircleGeometry(0.035, 32), { needsUpdate: true }),
     new THREE.MeshBasicMaterial({ color: 0xf5c842, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
   );
   dot.geometry.rotateX(-Math.PI / 2);
   reticle.add(dot);
   scene.add(reticle);
 
-  // Shadow floor
+  // Shadow receiver
   shadowFloor = new THREE.Mesh(
     new THREE.PlaneGeometry(12, 12),
     new THREE.ShadowMaterial({ opacity: 0.3 })
@@ -434,7 +446,6 @@ function buildScene() {
 
 function loadGLB() {
   return new Promise((resolve, reject) => {
-    // ── DRACO decoder — same CDN path that worked before ──
     const draco = new DRACOLoader();
     draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     draco.preload();
@@ -447,7 +458,7 @@ function loadGLB() {
       gltf => {
         model = gltf.scene;
 
-        // Normalise: largest dim → MODEL_SCALE metres
+        // Normalise size
         const box    = new THREE.Box3().setFromObject(model);
         const size   = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
@@ -455,23 +466,22 @@ function loadGLB() {
         model.scale.setScalar(s);
         model.userData.finalScale = s;
 
-        // Sit base on floor
+        // Sit base on floor plane
         const box2   = new THREE.Box3().setFromObject(model);
         const centre = box2.getCenter(new THREE.Vector3());
         model.position.set(-centre.x, -box2.min.y, -centre.z);
 
-        model.traverse(child => {
-          if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; }
+        model.traverse(c => {
+          if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; }
         });
 
         // Animations
         if (gltf.animations?.length) {
           mixer     = new THREE.AnimationMixer(model);
           animClips = gltf.animations;
-          console.log('Animations:', animClips.map(a => a.name));
           playAnim(0);
         } else {
-          animBtn.style.opacity = '0.35';
+          animBtn.style.opacity = '0.4';
           animBtn.style.pointerEvents = 'none';
           animBtn.textContent = 'No Anims';
         }
@@ -481,10 +491,9 @@ function loadGLB() {
         resolve();
       },
       xhr => {
-        if (xhr.total) loadingText.textContent =
-          'Loading model… ' + Math.round(xhr.loaded / xhr.total * 100) + '%';
+        if (xhr.total) ltxt.textContent = 'Loading… ' + Math.round(xhr.loaded / xhr.total * 100) + '%';
       },
-      reject
+      err => reject(err)
     );
   });
 }
@@ -493,53 +502,70 @@ function playAnim(idx) {
   if (!mixer || !animClips.length) return;
   if (currentAction) currentAction.fadeOut(0.35);
   animIdx = ((idx % animClips.length) + animClips.length) % animClips.length;
-  const clip    = animClips[animIdx];
+  const clip = animClips[animIdx];
   currentAction = mixer.clipAction(clip);
   currentAction.reset().fadeIn(0.35).play();
   const label = clip.name || `Anim ${animIdx + 1}`;
-  animBtn.textContent = '▶ ' + (label.length > 10 ? label.slice(0,10) + '…' : label);
+  animBtn.textContent = '▶ ' + (label.length > 11 ? label.slice(0, 11) + '…' : label);
 }
 
-async function startAndroidXR() {
+async function startAndroidAR() {
+  // Check WebXR first — before hiding anything
+  if (!navigator.xr) {
+    showErr('WebXR Not Supported', 'Open this page in Chrome on Android with ARCore installed. Make sure you\'re on HTTPS.');
+    return;
+  }
+  let ok = false;
+  try { ok = await navigator.xr.isSessionSupported('immersive-ar'); } catch(_) {}
+  if (!ok) {
+    showErr('AR Not Available', 'ARCore is not installed or this device does not support AR. Install the Google Play Services for AR app and try again.');
+    return;
+  }
+
+  // Only hide splash once we know AR is available
+  splash.style.display = 'none';
+  loading.classList.add('show');
+  ltxt.textContent = 'Loading model…';
+
   buildRenderer();
   buildScene();
 
-  loading.classList.add('active');
-  loadingText.textContent = 'Loading model…';
-
-  try { await loadGLB(); }
-  catch (e) {
-    loadingText.textContent = '⚠ model.glb load failed — check the file path\n' + e.message;
-    setStatus('err', 'Model load failed'); return;
+  try {
+    await loadGLB();
+  } catch(e) {
+    showErr('Model Load Failed', 'Could not load model.glb. Check that the file is in the same folder as this HTML and you\'re on HTTPS.\n\nError: ' + e.message);
+    return;
   }
 
-  loadingText.textContent = 'Starting AR session…';
+  ltxt.textContent = 'Starting AR session…';
 
+  let xrSession;
   try {
     xrSession = await navigator.xr.requestSession('immersive-ar', {
       requiredFeatures: ['hit-test'],
       optionalFeatures: ['dom-overlay'],
       domOverlay: { root: document.body },
     });
-  } catch (e) {
-    loadingText.textContent = '⚠ AR session failed: ' + e.message; return;
+  } catch(e) {
+    showErr('AR Session Failed', 'Could not start AR: ' + e.message);
+    return;
   }
 
   renderer.xr.setReferenceSpaceType('local');
   await renderer.xr.setSession(xrSession);
 
-  loading.classList.remove('active');
-  statusBar.classList.add('visible');
-  reticleHint.classList.add('visible');
-  controls.classList.add('visible');
+  loading.classList.remove('show');
+  statusBar.classList.add('show');
+  rhint.classList.add('show');
+  controls.classList.add('show');
   setStatus('warn', 'Scan your floor slowly…');
 
   xrSession.addEventListener('end', () => {
     placed = false; hitTestSource = null; hitTestSourceRequested = false;
     renderer.setAnimationLoop(null);
-    statusBar.classList.remove('visible');
-    reticleHint.classList.remove('visible');
-    controls.classList.remove('visible');
+    statusBar.classList.remove('show');
+    rhint.classList.remove('show');
+    controls.classList.remove('show');
     splash.style.display = 'flex';
   });
 
@@ -555,9 +581,9 @@ function onFrame(time, frame) {
 
   if (!hitTestSourceRequested) {
     hitTestSourceRequested = true;
-    session.requestReferenceSpace('viewer').then(vs => {
-      session.requestHitTestSource({ space: vs }).then(src => { hitTestSource = src; });
-    });
+    session.requestReferenceSpace('viewer').then(vs =>
+      session.requestHitTestSource({ space: vs }).then(src => { hitTestSource = src; })
+    );
   }
 
   if (hitTestSource && !placed) {
@@ -575,6 +601,7 @@ function onFrame(time, frame) {
       setStatus('warn', 'Keep scanning the floor…');
     }
   }
+
   renderer.render(scene, camera);
 }
 
@@ -595,20 +622,20 @@ function placeModel() {
 
   shadowFloor.position.copy(pos);
   shadowFloor.visible = true;
-
   model.visible = true;
+
   const finalS = model.userData.finalScale;
   model.scale.setScalar(0);
   let t = 0;
   const tick = () => {
     t = Math.min(t + 0.055, 1);
-    model.scale.setScalar((1 - Math.pow(1-t, 3)) * finalS);
+    model.scale.setScalar((1 - Math.pow(1 - t, 3)) * finalS);
     if (t < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
 
   reticle.visible = false;
-  reticleHint.classList.remove('visible');
+  rhint.classList.remove('show');
   placeBtn.textContent = '✓ Placed';
   placeBtn.style.background = 'rgba(255,255,255,0.08)';
   placeBtn.style.color = 'rgba(255,255,255,0.4)';
@@ -629,36 +656,16 @@ function resetPlacement() {
   reticle.visible = false;
   placeBtn.textContent = '📍 Place';
   placeBtn.style.cssText = '';
-  reticleHint.classList.add('visible');
+  rhint.classList.add('show');
   setStatus('warn', 'Scan your floor again…');
 }
 
-// ── Button handlers ───────────────────────────────────────
 placeBtn.addEventListener('click', placeModel);
 animBtn.addEventListener('click',  () => playAnim(animIdx + 1));
 resetBtn.addEventListener('click', resetPlacement);
 
-// ── Start button ──────────────────────────────────────────
-startBtn.addEventListener('click', async () => {
-  if (isIOS) {
-    // iOS: skip Three.js entirely — use Safari's native Quick Look
-    splash.style.display = 'none';
-    launchIOSQuickLook();
-    // Show status bar with tip
-    statusBar.classList.add('visible');
-    setStatus('', '🍎 AR Quick Look active');
-    return;
-  }
-
-  // Android / other: check WebXR support then launch Three.js path
-  if (!navigator.xr) { noAR.classList.add('active'); return; }
-  let ok = false;
-  try { ok = await navigator.xr.isSessionSupported('immersive-ar'); } catch (_) {}
-  if (!ok) { noAR.classList.add('active'); return; }
-
-  splash.style.display = 'none';
-  startAndroidXR();
-});
+// Android button — async is fine here (not iOS)
+androidBtn.addEventListener('click', () => startAndroidAR());
 </script>
 </body>
 </html>
