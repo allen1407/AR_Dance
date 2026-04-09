@@ -4,11 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0f1e">
 <title>AR · Floor Projection</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- model-viewer: handles WebXR (Android) + AR Quick Look (iOS) automatically -->
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
 <style>
 :root {
   --ink:    #0a0f1e;
@@ -28,7 +33,16 @@ html, body {
   background: var(--ink);
   -webkit-tap-highlight-color: transparent;
 }
-canvas { display: block; }
+
+/* ── model-viewer fills the whole screen ── */
+model-viewer {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  background: transparent;
+  --poster-color: transparent;
+}
+/* Hide the default AR button — we use our own */
+model-viewer::part(default-ar-button) { display: none !important; }
 
 /* ── Splash ── */
 #splash {
@@ -42,8 +56,8 @@ canvas { display: block; }
 #splash::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background-image:
-    repeating-linear-gradient(0deg,  transparent, transparent 39px, rgba(255,255,255,0.02) 40px),
-    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.02) 40px);
+    repeating-linear-gradient(0deg,  transparent, transparent 39px, rgba(255,255,255,0.025) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.025) 40px);
 }
 #splash-card {
   position: relative;
@@ -51,13 +65,13 @@ canvas { display: block; }
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.09);
   border-radius: 28px; padding: 36px 28px 32px;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
   animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
 }
 @keyframes cardIn {
   from { opacity:0; transform: translateY(32px) scale(0.97); }
-  to   { opacity:1; transform: translateY(0) scale(1); }
+  to   { opacity:1; transform: translateY(0)   scale(1); }
 }
 .splash-badge {
   display: inline-flex; align-items: center; gap: 6px;
@@ -74,7 +88,18 @@ canvas { display: block; }
   background: linear-gradient(135deg, var(--gold), var(--teal));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.splash-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 28px; }
+.splash-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 28px; line-height: 1.5; }
+
+/* Platform badge */
+#platform-badge {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 12px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 20px;
+}
+#platform-icon { font-size: 20px; }
+#platform-text { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.4; }
+#platform-text strong { color: var(--teal); display: block; font-size: 12px; margin-bottom: 1px; }
 
 .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
 .step {
@@ -99,39 +124,27 @@ canvas { display: block; }
   transition: transform 0.15s, opacity 0.2s;
 }
 #start-btn:active { transform: scale(0.97); }
-#start-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── HUD ── */
+/* ── HUD status bar ── */
 #status-bar {
   position: fixed; top: calc(var(--safe-top) + 12px);
   left: 50%; transform: translateX(-50%);
   display: flex; align-items: center; gap: 8px;
   background: rgba(10,15,30,0.78); border: 1px solid var(--border);
   border-radius: 40px; padding: 8px 18px; z-index: 500;
-  backdrop-filter: blur(14px); white-space: nowrap;
-  max-width: calc(100vw - 32px); pointer-events: none;
-  opacity: 0; transition: opacity 0.4s;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  white-space: nowrap; max-width: calc(100vw - 32px);
+  pointer-events: none; opacity: 0; transition: opacity 0.4s;
 }
 #status-bar.visible { opacity: 1; }
 #status-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: var(--teal); box-shadow: 0 0 8px var(--teal);
-  flex-shrink: 0; transition: background 0.3s;
+  background: var(--teal); box-shadow: 0 0 8px var(--teal); flex-shrink: 0;
+  transition: background 0.3s;
 }
-#status-dot.warn { background: var(--gold);  box-shadow: 0 0 8px var(--gold); }
-#status-dot.err  { background: #ff4f6d;      box-shadow: 0 0 8px #ff4f6d; }
+#status-dot.warn { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+#status-dot.err  { background: #ff4f6d;     box-shadow: 0 0 8px #ff4f6d; }
 #status-text { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.85); }
-
-#reticle-hint {
-  position: fixed; bottom: calc(var(--safe-bottom) + 110px);
-  left: 50%; transform: translateX(-50%);
-  background: rgba(10,15,30,0.78); border: 1px solid rgba(0,212,180,0.3);
-  color: var(--teal); padding: 8px 20px; border-radius: 40px;
-  font-family: var(--font-head); font-size: 12px; font-weight: 700; letter-spacing: 0.4px;
-  z-index: 500; pointer-events: none; backdrop-filter: blur(12px);
-  opacity: 0; transition: opacity 0.4s;
-}
-#reticle-hint.visible { opacity: 1; }
 
 /* ── Bottom controls ── */
 #controls {
@@ -143,33 +156,34 @@ canvas { display: block; }
 #controls.visible { opacity: 1; }
 
 .ctrl-btn {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
   padding: 11px 18px; border: none; border-radius: 40px; cursor: pointer;
   font-family: var(--font-head); font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
-  transition: transform 0.15s; backdrop-filter: blur(12px);
+  transition: transform 0.15s, box-shadow 0.15s;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  -webkit-tap-highlight-color: transparent;
 }
 .ctrl-btn:active { transform: scale(0.92); }
 
-#place-btn {
+#ar-btn {
   background: linear-gradient(135deg, var(--teal), var(--teal2));
   color: var(--ink); box-shadow: 0 6px 24px rgba(0,212,180,0.4);
-  padding: 14px 32px; font-size: 14px;
+  padding: 14px 28px; font-size: 14px;
 }
 #anim-btn {
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.85); box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  max-width: 130px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  color: rgba(255,255,255,0.85); max-width: 130px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
-#reset-btn {
+#rotate-btn {
   background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.6); font-size: 18px; width: 44px; height: 44px;
-  justify-content: center; padding: 0;
+  color: rgba(255,255,255,0.7); width: 44px; height: 44px; padding: 0; border-radius: 50%;
 }
 
-/* ── Loading ── */
+/* ── Loading overlay ── */
 #loading {
   position: fixed; inset: 0; z-index: 1500;
-  background: rgba(10,15,30,0.85); backdrop-filter: blur(8px);
+  background: rgba(10,15,30,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   display: none; align-items: center; justify-content: center;
   flex-direction: column; gap: 20px;
 }
@@ -182,417 +196,341 @@ canvas { display: block; }
 .loader-ring::before { border-top-color: var(--teal);  animation: spin 0.9s linear infinite; }
 .loader-ring::after  { border-bottom-color: var(--gold); animation: spin 1.4s linear infinite reverse; }
 @keyframes spin { to { transform: rotate(360deg); } }
-#loading-text { font-size: 14px; color: rgba(255,255,255,0.7); font-family: var(--font-body); }
+#loading-text { font-size: 14px; color: rgba(255,255,255,0.7); text-align: center; max-width: 260px; line-height: 1.5; }
 
-/* ── No-XR notice ── */
-#no-xr {
+/* ── iOS Quick Look tip (shown briefly after AR launch on iOS) ── */
+#ios-tip {
+  position: fixed; top: calc(var(--safe-top) + 60px);
+  left: 50%; transform: translateX(-50%);
+  background: rgba(10,15,30,0.88); border: 1px solid rgba(245,200,66,0.35);
+  color: rgba(255,255,255,0.85); padding: 10px 20px;
+  border-radius: 20px; font-size: 12px; font-weight: 500; letter-spacing: 0.2px;
+  z-index: 500; pointer-events: none; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  white-space: nowrap; opacity: 0; transition: opacity 0.4s;
+}
+#ios-tip.visible { opacity: 1; }
+
+/* ── AR active overlay (Android WebXR) ── */
+#ar-controls {
+  position: fixed; bottom: calc(var(--safe-bottom) + 32px);
+  right: 20px; z-index: 600;
+  display: flex; flex-direction: column; gap: 10px;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s;
+}
+#ar-controls.visible { opacity: 1; pointer-events: auto; }
+.ar-ctrl-btn {
+  width: 52px; height: 52px; border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; cursor: pointer;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  -webkit-tap-highlight-color: transparent; transition: transform 0.15s;
+}
+.ar-ctrl-btn:active { transform: scale(0.90); }
+#ar-anim-btn { background: rgba(0,212,180,0.25); border: 1px solid rgba(0,212,180,0.4); }
+#ar-exit-btn { background: rgba(255,79,109,0.25); border: 1px solid rgba(255,79,109,0.4); color: #ff4f6d; font-size: 16px; }
+
+/* ── No-AR notice ── */
+#no-ar {
   position: fixed; inset: 0; z-index: 3000;
   display: none; align-items: center; justify-content: center;
   background: var(--ink); text-align: center; padding: 32px;
   flex-direction: column; gap: 16px;
 }
-#no-xr.active { display: flex; }
-#no-xr h2 { font-family: var(--font-head); color: #fff; font-size: 22px; }
-#no-xr p  { color: rgba(255,255,255,0.5); font-size: 14px; max-width: 300px; line-height: 1.6; }
+#no-ar.active { display: flex; }
+#no-ar h2 { font-family: var(--font-head); color: #fff; font-size: 22px; }
+#no-ar p  { color: rgba(255,255,255,0.5); font-size: 14px; max-width: 300px; line-height: 1.6; }
+#no-ar a  { color: var(--teal); text-decoration: none; font-weight: 600; }
 </style>
 </head>
 <body>
 
+<!-- ── Splash ── -->
 <div id="splash">
   <div id="splash-card">
-    <div class="splash-badge">✦ WebXR · Floor AR</div>
+    <div class="splash-badge">✦ AR · iOS &amp; Android</div>
     <div class="splash-title">Point.<br><span>Place. Watch.</span></div>
-    <p class="splash-sub">No markers · Drop your model on any floor</p>
-    <div class="steps">
-      <div class="step"><span class="step-num">1</span><p>Tap <strong>Launch AR</strong> and allow camera access</p></div>
-      <div class="step"><span class="step-num">2</span><p>Slowly scan your floor until the <strong>teal ring</strong> appears</p></div>
-      <div class="step"><span class="step-num">3</span><p>Tap <strong>Place</strong> to anchor the model to the floor</p></div>
-      <div class="step"><span class="step-num">4</span><p>Tap <strong>Anim</strong> to cycle through all animations</p></div>
+    <p class="splash-sub">No markers needed · Projects your model onto any real floor</p>
+
+    <div id="platform-badge">
+      <span id="platform-icon">📱</span>
+      <div id="platform-text">
+        <strong id="platform-name">Detecting…</strong>
+        <span id="platform-desc">Checking AR support</span>
+      </div>
     </div>
+
+    <div class="steps" id="steps-android">
+      <div class="step"><span class="step-num">1</span><p>Tap <strong>Launch AR</strong> and allow camera access</p></div>
+      <div class="step"><span class="step-num">2</span><p>Slowly scan your floor until it detects the surface</p></div>
+      <div class="step"><span class="step-num">3</span><p>Tap the floor to <strong>place the model</strong></p></div>
+      <div class="step"><span class="step-num">4</span><p>Use the <strong>▶ Anim</strong> button to cycle animations</p></div>
+    </div>
+    <div class="steps" id="steps-ios" style="display:none">
+      <div class="step"><span class="step-num">1</span><p>Tap <strong>Launch AR</strong> — opens Apple AR Quick Look</p></div>
+      <div class="step"><span class="step-num">2</span><p>Move your phone over the floor until it detects a surface</p></div>
+      <div class="step"><span class="step-num">3</span><p>Tap to <strong>place the model</strong> on the floor</p></div>
+      <div class="step"><span class="step-num">4</span><p>Pinch to resize · drag to reposition</p></div>
+    </div>
+
     <button id="start-btn">Launch AR →</button>
   </div>
 </div>
 
+<!-- ── model-viewer (hidden while splash shown, used as 3D preview + AR trigger) ── -->
+<model-viewer
+  id="mv"
+  src="model.glb"
+  ar
+  ar-modes="webxr scene-viewer quick-look"
+  ar-scale="fixed"
+  camera-controls
+  auto-rotate
+  auto-rotate-delay="1000"
+  rotation-per-second="20deg"
+  shadow-intensity="1.2"
+  shadow-softness="1"
+  environment-image="neutral"
+  exposure="1"
+  reveal="auto"
+  style="display:none"
+>
+  <!-- Hidden AR button slot — we trigger it programmatically -->
+  <button slot="ar-button" id="mv-ar-btn" style="display:none">AR</button>
+
+  <!-- Poster / loading -->
+  <div slot="progress-bar" style="display:none"></div>
+</model-viewer>
+
+<!-- ── Loading ── -->
 <div id="loading">
   <div class="loader-ring"></div>
   <p id="loading-text">Loading model…</p>
 </div>
 
-<div id="no-xr">
-  <h2>WebXR Not Available</h2>
-  <p>Open in <strong>Chrome on Android</strong>, or enable WebXR in Safari 17+ on iOS. Make sure you're on <strong>HTTPS</strong>.</p>
+<!-- ── No AR notice ── -->
+<div id="no-ar">
+  <h2>AR Not Available</h2>
+  <p>
+    On <strong>Android</strong>: open in <a href="https://www.google.com/chrome/">Chrome</a> with ARCore installed.<br><br>
+    On <strong>iPhone/iPad</strong>: open in <a href="https://www.apple.com/safari/">Safari</a> (iOS 13+).
+  </p>
 </div>
 
+<!-- ── HUD ── -->
 <div id="status-bar"><span id="status-dot"></span><span id="status-text">Ready</span></div>
-<div id="reticle-hint">🎯 Point at the floor to detect surface</div>
+<div id="ios-tip">💡 Tap the floor in Quick Look to place</div>
+
+<!-- ── Preview controls (shown over 3D preview, before AR) ── -->
 <div id="controls">
-  <button class="ctrl-btn" id="reset-btn" title="Reset">↺</button>
-  <button class="ctrl-btn" id="place-btn">📍 Place</button>
+  <button class="ctrl-btn" id="rotate-btn" title="Toggle auto-rotate">⟳</button>
+  <button class="ctrl-btn" id="ar-btn">📷 Launch AR</button>
   <button class="ctrl-btn" id="anim-btn">▶ Anim</button>
 </div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
-  }
-}
-</script>
+<!-- ── In-AR controls (Android WebXR only, shown during AR session) ── -->
+<div id="ar-controls">
+  <button class="ar-ctrl-btn" id="ar-anim-btn" title="Next animation">▶</button>
+  <button class="ar-ctrl-btn" id="ar-exit-btn" title="Exit AR">✕</button>
+</div>
 
-<script type="module">
-import * as THREE from 'three';
-import { GLTFLoader }  from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+<script>
+(function () {
+  const mv          = document.getElementById('mv');
+  const splash      = document.getElementById('splash');
+  const loading     = document.getElementById('loading');
+  const loadingText = document.getElementById('loading-text');
+  const noAR        = document.getElementById('no-ar');
+  const statusBar   = document.getElementById('status-bar');
+  const statusDot   = document.getElementById('status-dot');
+  const statusTxt   = document.getElementById('status-text');
+  const controls    = document.getElementById('controls');
+  const arControls  = document.getElementById('ar-controls');
+  const iosTip      = document.getElementById('ios-tip');
+  const startBtn    = document.getElementById('start-btn');
+  const arBtn       = document.getElementById('ar-btn');
+  const animBtn     = document.getElementById('anim-btn');
+  const rotateBtn   = document.getElementById('rotate-btn');
+  const arAnimBtn   = document.getElementById('ar-anim-btn');
+  const arExitBtn   = document.getElementById('ar-exit-btn');
+  const mvArBtn     = document.getElementById('mv-ar-btn');
 
-// ─────────────────────────────────────────────────────────
-// ★ CONFIG — edit these two lines only
-const MODEL_URL   = 'model.glb';  // path or URL to your GLB
-const MODEL_SCALE = 0.25;         // 0.25 = ~75cm tall for a 3m model; raise/lower to taste
-// ─────────────────────────────────────────────────────────
+  const platformName = document.getElementById('platform-name');
+  const platformDesc = document.getElementById('platform-desc');
+  const platformIcon = document.getElementById('platform-icon');
+  const stepsAndroid = document.getElementById('steps-android');
+  const stepsIOS     = document.getElementById('steps-ios');
 
-const $ = id => document.getElementById(id);
-const splash      = $('splash');
-const loading     = $('loading');
-const loadingText = $('loading-text');
-const noXR        = $('no-xr');
-const statusBar   = $('status-bar');
-const statusDot   = $('status-dot');
-const statusTxt   = $('status-text');
-const reticleHint = $('reticle-hint');
-const controls    = $('controls');
-const placeBtn    = $('place-btn');
-const animBtn     = $('anim-btn');
-const resetBtn    = $('reset-btn');
-const startBtn    = $('start-btn');
+  // ── Platform detection ─────────────────────────────────
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /android/i.test(navigator.userAgent);
 
-let renderer, scene, camera, clock;
-let reticle, shadowFloor;
-let model, modelGroup, mixer;
-let animClips = [], animIdx = 0, currentAction;
-let placed = false;
-let hitTestSource = null, hitTestSourceRequested = false;
-let xrSession;
-
-function setStatus(type, text) {
-  statusDot.className = type === 'warn' ? 'warn' : type === 'err' ? 'err' : '';
-  statusTxt.textContent = text;
-}
-
-// ── THREE SCENE ───────────────────────────────────────────
-function buildScene() {
-  scene  = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 200);
-  clock  = new THREE.Clock();
-
-  // Lights
-  scene.add(new THREE.AmbientLight(0xffffff, 1.6));
-
-  const dir = new THREE.DirectionalLight(0xffffff, 2.5);
-  dir.position.set(3, 5, 3);
-  dir.castShadow = true;
-  dir.shadow.mapSize.set(1024, 1024);
-  dir.shadow.camera.near = 0.1;
-  dir.shadow.camera.far  = 20;
-  scene.add(dir);
-
-  const fill = new THREE.DirectionalLight(0xaaccff, 0.9);
-  fill.position.set(-3, 2, -3);
-  scene.add(fill);
-
-  // Reticle ring (placement indicator)
-  const ring = new THREE.RingGeometry(0.09, 0.14, 64);
-  ring.rotateX(-Math.PI / 2);
-  reticle = new THREE.Mesh(ring, new THREE.MeshBasicMaterial({
-    color: 0x00d4b4, side: THREE.DoubleSide, transparent: true, opacity: 0.9
-  }));
-  reticle.matrixAutoUpdate = false;
-  reticle.visible = false;
-
-  // Gold dot at centre of reticle
-  const dot = new THREE.Mesh(
-    Object.assign(new THREE.CircleGeometry(0.035, 32), { needsUpdate: true }),
-    new THREE.MeshBasicMaterial({ color: 0xf5c842, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
-  );
-  dot.geometry.rotateX(-Math.PI / 2);
-  reticle.add(dot);
-  scene.add(reticle);
-
-  // Shadow-receiver plane (shown after placement)
-  shadowFloor = new THREE.Mesh(
-    new THREE.PlaneGeometry(12, 12),
-    new THREE.ShadowMaterial({ opacity: 0.3 })
-  );
-  shadowFloor.rotation.x = -Math.PI / 2;
-  shadowFloor.receiveShadow = true;
-  shadowFloor.visible = false;
-  scene.add(shadowFloor);
-}
-
-// ── RENDERER ──────────────────────────────────────────────
-function buildRenderer() {
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.xr.enabled = true;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  document.body.appendChild(renderer.domElement);
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-}
-
-// ── LOAD GLB ──────────────────────────────────────────────
-function loadGLB() {
-  return new Promise((resolve, reject) => {
-    const draco = new DRACOLoader();
-    draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-    draco.preload();
-
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(draco);
-
-    loader.load(
-      MODEL_URL,
-      gltf => {
-        model = gltf.scene;
-
-        // ── Normalise size ───────────────────────────────
-        // Model is ~3 m³. We scale it so its largest dimension equals MODEL_SCALE metres.
-        const box    = new THREE.Box3().setFromObject(model);
-        const size   = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z); // ≈ 3
-        const s      = MODEL_SCALE / maxDim;              // e.g. 0.25/3 ≈ 0.083
-        model.scale.setScalar(s);
-        model.userData.finalScale = s;
-
-        // Shift so model base sits exactly on the floor (Y=0 of its group)
-        const box2   = new THREE.Box3().setFromObject(model);
-        const centre = box2.getCenter(new THREE.Vector3());
-        model.position.set(-centre.x, -box2.min.y, -centre.z);
-
-        // Shadows on every mesh
-        model.traverse(child => {
-          if (child.isMesh) { child.castShadow = true; child.receiveShadow = true; }
-        });
-
-        // Animations
-        if (gltf.animations?.length) {
-          mixer     = new THREE.AnimationMixer(model);
-          animClips = gltf.animations;
-          console.log('Animations found:', animClips.map(a => a.name));
-          playAnim(0);
-        } else {
-          animBtn.style.opacity = '0.35';
-          animBtn.style.pointerEvents = 'none';
-          animBtn.textContent = 'No Anims';
-        }
-
-        model.visible = false;
-        scene.add(model);
-        resolve();
-      },
-      xhr => {
-        if (xhr.total) loadingText.textContent =
-          'Loading model… ' + Math.round(xhr.loaded / xhr.total * 100) + '%';
-      },
-      err => reject(err)
-    );
-  });
-}
-
-function playAnim(idx) {
-  if (!mixer || !animClips.length) return;
-  if (currentAction) currentAction.fadeOut(0.35);
-  animIdx = ((idx % animClips.length) + animClips.length) % animClips.length;
-  const clip = animClips[animIdx];
-  currentAction = mixer.clipAction(clip);
-  currentAction.reset().fadeIn(0.35).play();
-  const label = clip.name || `Anim ${animIdx + 1}`;
-  animBtn.textContent = '▶ ' + (label.length > 10 ? label.slice(0, 10) + '…' : label);
-}
-
-// ── XR SESSION ────────────────────────────────────────────
-async function startXR() {
-  buildRenderer();
-  buildScene();
-
-  loading.classList.add('active');
-  loadingText.textContent = 'Loading model…';
-
-  try {
-    await loadGLB();
-  } catch (e) {
-    console.error('Model load error:', e);
-    loadingText.textContent = '⚠ Could not load model.glb — check MODEL_URL';
-    setStatus('err', 'Model load failed');
-    return;
+  if (isIOS) {
+    platformIcon.textContent = '🍎';
+    platformName.textContent = 'iPhone / iPad';
+    platformDesc.textContent = 'Uses Apple AR Quick Look';
+    stepsAndroid.style.display = 'none';
+    stepsIOS.style.display     = 'flex';
+  } else if (isAndroid) {
+    platformIcon.textContent = '🤖';
+    platformName.textContent = 'Android';
+    platformDesc.textContent = 'Uses ARCore · WebXR / Scene Viewer';
+  } else {
+    platformIcon.textContent = '💻';
+    platformName.textContent = 'Desktop / Other';
+    platformDesc.textContent = '3D preview only — AR needs a phone';
   }
 
-  loadingText.textContent = 'Starting AR session…';
+  // ── model-viewer scale for a 3 m³ model ───────────────
+  // model-viewer's `scale` attribute is in metres-per-unit.
+  // We want the largest dimension to appear as ~0.25 m in AR.
+  // We don't know exact model dims before load, so we normalise
+  // after load via the `load` event.
+  const TARGET_SIZE = 0.25; // metres — tweak to taste
 
-  try {
-    xrSession = await navigator.xr.requestSession('immersive-ar', {
-      requiredFeatures: ['hit-test'],
-      optionalFeatures: ['dom-overlay'],
-      domOverlay: { root: document.body },
-    });
-  } catch (e) {
-    loadingText.textContent = '⚠ AR session error: ' + e.message;
-    return;
+  function setStatus(type, text) {
+    statusDot.className = type === 'warn' ? 'warn' : type === 'err' ? 'err' : '';
+    statusTxt.textContent = text;
   }
 
-  renderer.xr.setReferenceSpaceType('local');
-  await renderer.xr.setSession(xrSession);
+  // ── Wait for model-viewer to load ─────────────────────
+  let animNames = [];
+  let animIdx   = 0;
+  let autoRotating = true;
 
-  loading.classList.remove('active');
-  statusBar.classList.add('visible');
-  reticleHint.classList.add('visible');
-  controls.classList.add('visible');
-  setStatus('warn', 'Scan your floor slowly…');
+  mv.addEventListener('load', () => {
+    // Scale the model so its largest dimension = TARGET_SIZE
+    const bb = mv.getDimensions();          // { x, y, z } in metres
+    if (bb) {
+      const maxDim = Math.max(bb.x, bb.y, bb.z);
+      if (maxDim > 0) {
+        const s = TARGET_SIZE / maxDim;
+        mv.scale = `${s} ${s} ${s}`;
+      }
+    }
 
-  xrSession.addEventListener('end', () => {
-    xrSession = null;
-    hitTestSource = null;
-    hitTestSourceRequested = false;
-    placed = false;
-    renderer.setAnimationLoop(null);
-    statusBar.classList.remove('visible');
-    reticleHint.classList.remove('visible');
-    controls.classList.remove('visible');
-    splash.style.display = 'flex';
-  });
-
-  renderer.setAnimationLoop(onFrame);
-}
-
-// ── FRAME LOOP ────────────────────────────────────────────
-function onFrame(time, frame) {
-  if (!frame) return;
-
-  const delta = clock.getDelta();
-  if (mixer) mixer.update(delta);
-
-  const refSpace = renderer.xr.getReferenceSpace();
-  const session  = renderer.xr.getSession();
-
-  // Request hit-test source once
-  if (!hitTestSourceRequested) {
-    hitTestSourceRequested = true;
-    session.requestReferenceSpace('viewer').then(vs => {
-      session.requestHitTestSource({ space: vs }).then(src => {
-        hitTestSource = src;
-        setStatus('', 'Move phone over the floor');
-      }).catch(e => { console.warn('hit-test source:', e); setStatus('err', 'Hit-test unavailable'); });
-    });
-  }
-
-  // Reticle tracking (only while not yet placed)
-  if (hitTestSource && !placed) {
-    const hits = frame.getHitTestResults(hitTestSource);
-    if (hits.length) {
-      const pose = hits[0].getPose(refSpace);
-      reticle.visible = true;
-      reticle.matrix.fromArray(pose.transform.matrix);
-
-      // Subtle pulse
-      const p = 0.9 + 0.1 * Math.sin(time * 0.004);
-      reticle.scale.set(p, p, p);
-      reticle.material.opacity = 0.7 + 0.2 * Math.sin(time * 0.004);
-      setStatus('', 'Floor found — tap Place!');
+    // Collect animations
+    animNames = mv.availableAnimations || [];
+    if (animNames.length) {
+      mv.animationName = animNames[0];
+      mv.play({ repetitions: Infinity });
+      updateAnimBtn();
     } else {
-      reticle.visible = false;
-      setStatus('warn', 'Keep scanning the floor…');
+      animBtn.style.opacity = '0.35';
+      animBtn.style.pointerEvents = 'none';
+      animBtn.textContent = 'No Anims';
+      arAnimBtn.style.opacity = '0.35';
+      arAnimBtn.style.pointerEvents = 'none';
+    }
+  });
+
+  function updateAnimBtn() {
+    if (!animNames.length) return;
+    const label = animNames[animIdx] || `Anim ${animIdx + 1}`;
+    const short = label.length > 10 ? label.slice(0, 10) + '…' : label;
+    animBtn.textContent   = '▶ ' + short;
+    arAnimBtn.textContent = '▶';
+    arAnimBtn.title       = label;
+  }
+
+  function nextAnim() {
+    if (!animNames.length) return;
+    animIdx = (animIdx + 1) % animNames.length;
+    mv.animationName = animNames[animIdx];
+    mv.play({ repetitions: Infinity });
+    updateAnimBtn();
+  }
+
+  // ── Splash → preview ──────────────────────────────────
+  startBtn.addEventListener('click', () => {
+    splash.style.display    = 'none';
+    loading.classList.add('active');
+    loadingText.textContent = 'Loading model…';
+    mv.style.display        = 'block';
+
+    // Wait for model to be ready
+    if (mv.loaded) {
+      onReady();
+    } else {
+      mv.addEventListener('load', onReady, { once: true });
+      mv.addEventListener('error', () => {
+        loadingText.textContent = '⚠ Could not load model.glb — check the file path';
+        setStatus('err', 'Model load failed');
+      }, { once: true });
+    }
+  });
+
+  function onReady() {
+    loading.classList.remove('active');
+    statusBar.classList.add('visible');
+    controls.classList.add('visible');
+    setStatus('', isIOS ? 'Tap Launch AR to start' : 'Preview mode — tap Launch AR');
+  }
+
+  // ── AR launch ─────────────────────────────────────────
+  arBtn.addEventListener('click', launchAR);
+
+  async function launchAR() {
+    // Check AR support
+    if (typeof mv.canActivateAR === 'boolean' && !mv.canActivateAR) {
+      noAR.classList.add('active');
+      return;
+    }
+
+    if (isIOS) {
+      // iOS: AR Quick Look opens natively via model-viewer
+      mvArBtn.click();
+      // Show a brief tip
+      iosTip.classList.add('visible');
+      setTimeout(() => iosTip.classList.remove('visible'), 5000);
+      setStatus('', '🍎 AR Quick Look opened');
+
+    } else if (isAndroid || navigator.xr) {
+      // Android: WebXR or Scene Viewer via model-viewer
+      mv.activateAR();
+
+    } else {
+      noAR.classList.add('active');
     }
   }
 
-  renderer.render(scene, camera);
-}
+  // ── AR session events (Android WebXR) ─────────────────
+  mv.addEventListener('ar-status', e => {
+    const status = e.detail.status;
+    if (status === 'session-started') {
+      controls.classList.remove('visible');
+      statusBar.classList.remove('visible');
+      // Show in-AR controls after a short delay
+      setTimeout(() => arControls.classList.add('visible'), 800);
+    } else if (status === 'not-presenting') {
+      arControls.classList.remove('visible');
+      controls.classList.add('visible');
+      statusBar.classList.add('visible');
+      setStatus('', 'AR session ended — preview mode');
+    } else if (status === 'failed') {
+      arControls.classList.remove('visible');
+      controls.classList.add('visible');
+      statusBar.classList.add('visible');
+      setStatus('err', 'AR unavailable — see preview');
+    }
+  });
 
-// ── PLACE MODEL ───────────────────────────────────────────
-function placeModel() {
-  if (!reticle.visible || placed) return;
-  placed = true;
+  // ── Button handlers ────────────────────────────────────
+  animBtn.addEventListener('click', nextAnim);
+  arAnimBtn.addEventListener('click', nextAnim);
 
-  // Decompose reticle world matrix → position + rotation
-  const m    = new THREE.Matrix4().fromArray(reticle.matrix.elements);
-  const pos  = new THREE.Vector3();
-  const quat = new THREE.Quaternion();
-  const sc   = new THREE.Vector3();
-  m.decompose(pos, quat, sc);
+  rotateBtn.addEventListener('click', () => {
+    autoRotating = !autoRotating;
+    mv.autoRotate = autoRotating;
+    rotateBtn.style.opacity = autoRotating ? '1' : '0.4';
+  });
 
-  // Group to hold model (lets us rotate/reposition easily)
-  modelGroup = new THREE.Group();
-  modelGroup.position.copy(pos);
-  modelGroup.quaternion.copy(quat);
+  arExitBtn.addEventListener('click', () => {
+    try { mv.exitPresentation && mv.exitPresentation(); } catch(_) {}
+    arControls.classList.remove('visible');
+  });
 
-  scene.remove(model);
-  modelGroup.add(model);
-  scene.add(modelGroup);
-
-  // Position shadow plane at the same Y
-  shadowFloor.position.copy(pos);
-  shadowFloor.visible = true;
-
-  // Pop-in scale tween (0 → finalScale)
-  model.visible = true;
-  const finalS = model.userData.finalScale;
-  model.scale.setScalar(0);
-  let t = 0;
-  const tick = () => {
-    t = Math.min(t + 0.055, 1);
-    model.scale.setScalar((1 - Math.pow(1 - t, 3)) * finalS);
-    if (t < 1) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-
-  reticle.visible = false;
-  reticleHint.classList.remove('visible');
-  placeBtn.textContent = '✓ Placed';
-  placeBtn.style.background = 'rgba(255,255,255,0.08)';
-  placeBtn.style.color = 'rgba(255,255,255,0.4)';
-  placeBtn.style.boxShadow = 'none';
-  setStatus('', '🎉 Model placed!');
-}
-
-// ── RESET ─────────────────────────────────────────────────
-function resetPlacement() {
-  if (modelGroup) {
-    modelGroup.remove(model);
-    scene.remove(modelGroup);
-    modelGroup = null;
-    model.visible = false;
-    scene.add(model);
-  }
-  shadowFloor.visible = false;
-  placed = false;
-  hitTestSourceRequested = false;
-  hitTestSource = null;
-  reticle.visible = false;
-
-  placeBtn.textContent = '📍 Place';
-  placeBtn.style.cssText = '';
-  reticleHint.classList.add('visible');
-  setStatus('warn', 'Scan your floor again…');
-}
-
-// ── BUTTONS ───────────────────────────────────────────────
-placeBtn.addEventListener('click', placeModel);
-animBtn.addEventListener('click',  () => playAnim(animIdx + 1));
-resetBtn.addEventListener('click', resetPlacement);
-
-startBtn.addEventListener('click', async () => {
-  if (!navigator.xr) { noXR.classList.add('active'); return; }
-  let ok = false;
-  try { ok = await navigator.xr.isSessionSupported('immersive-ar'); } catch (_) {}
-  if (!ok) { noXR.classList.add('active'); return; }
-  splash.style.display = 'none';
-  startXR();
-});
+})();
 </script>
 </body>
 </html>
