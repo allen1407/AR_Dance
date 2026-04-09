@@ -386,7 +386,7 @@ model-viewer::part(default-ar-button) { display: none !important; }
   // We want the largest dimension to appear as ~0.25 m in AR.
   // We don't know exact model dims before load, so we normalise
   // after load via the `load` event.
-  const TARGET_SIZE = 0.25; // metres — tweak to taste
+  const TARGET_SIZE = 0.5; // metres — tweak to taste
 
   function setStatus(type, text) {
     statusDot.className = type === 'warn' ? 'warn' : type === 'err' ? 'err' : '';
